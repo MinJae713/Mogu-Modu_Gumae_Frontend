@@ -62,6 +62,7 @@ class _SignUpPageState extends State<SignUpPage> {
       String phone = phoneController.text.replaceAll('-', '');
 
       String url = 'http://10.0.2.2:8080/user'; // 안드로이드 에뮬레이터의 경우
+      // String url = 'http://localhost:8080/user';
 
       try {
         final response = await http.post(

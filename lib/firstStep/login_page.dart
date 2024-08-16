@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:mogu_app/user/home/home_page.dart';
+import 'package:mogu_app/admin/home/home_page_FA.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -32,6 +33,7 @@ class _LoginPageState extends State<LoginPage> {
     }
 
     String loginUrl = 'http://10.0.2.2:8080/login?username=$username&password=$password';
+    // String loginUrl = 'http://localhost:8080/login?username=$username&password=$password';
 
     try {
       final response = await http.post(
@@ -95,12 +97,21 @@ class _LoginPageState extends State<LoginPage> {
 
   void _navigateToHomePage(Map<String, dynamic> userInfo) {
     Navigator.of(context).pop();
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) => HomePage(userInfo: userInfo),
-      ),
-    );
+    if (userInfo['role'] == '관리자') {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => HomePageFA(userInfo: userInfo), // 관리자 페이지로 이동
+        ),
+      );
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => HomePage(userInfo: userInfo), // 사용자 페이지로 이동
+        ),
+      );
+    }
   }
 
   void _showErrorDialog(String title, String content) {

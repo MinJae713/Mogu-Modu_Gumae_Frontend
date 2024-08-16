@@ -1,16 +1,20 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:mogu_app/user/chat/chat_room_page.dart';
 import 'package:mogu_app/user/home/post/post_create_page.dart';
 import 'package:mogu_app/user/home/search_page.dart';
 import 'package:mogu_app/user/myPage/account_management_page.dart';
 import 'package:mogu_app/user/home/post/post_detail_page.dart';
+import 'package:mogu_app/user/myPage/setting_page.dart';
+import 'package:mogu_app/user/myPage/update_profile_page.dart';
+import 'package:mogu_app/user/home/menu_page.dart';
+import 'package:mogu_app/user/home/notification_page.dart';
 
-import '../myPage/setting_page.dart';
-import '../myPage/update_profile_page.dart';
-import 'menu_page.dart';
-import 'notification_page.dart';
+import '../../service/location_service.dart';
 
 class HomePage extends StatefulWidget {
   final Map<String, dynamic> userInfo;
@@ -22,6 +26,24 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
+  late String userId;
+  late String name;
+  late String nickname;
+  late String phone;
+  late int level;
+  late String manner;
+  late double longitude;
+  late double latitude;
+  late int distanceMeters;
+  late DateTime registerDate;
+  late String profileImage;
+  late String address = "Loading location...";
+  late String token;
+  int userUid = 0;
+  int currentPurchaseCount = 0;
+  int needPurchaseCount = 0;
+  int savingCost = 0;
+
   BannerAd? _bannerAd;
   bool _isAdLoaded = false;
   int _selectedIndex = 0;
@@ -29,15 +51,13 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
   String _selectedSortOption = '최신순';
   final List<String> _sortOptions = ['최신순', '가까운 순'];
-  double _currentDistanceValue = 2.0; // 초기 거리 값 설정
+  double _currentDistanceValue = 2.0;
 
-  // 상태 관리용 변수 추가
   String _selectedRecruitmentStatus = '모집중';
   String _selectedPurchaseRoute = '오프라인';
   String _selectedPurchaseStatus = '미구입';
   String _selectedChatFilter = '전체';
 
-  // 홈 화면의 게시글 데이터
   final List<Map<String, dynamic>> posts = [
     {
       'username': '김찬',
@@ -59,10 +79,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       'likes': 7,
       'comments': 23,
     },
-    // 다른 게시글들...
   ];
 
-  // 채팅 목록 데이터
   final List<Map<String, String>> chatItems = List.generate(
     6,
         (index) => {
@@ -76,6 +94,108 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     super.initState();
     _loadBannerAd();
     _tabController = TabController(length: 2, vsync: this);
+    _initializeUserInfo();
+    _fetchAddress();
+    findUserLevel(context);
+    findUserSavingCose(context);
+  }
+
+  void _initializeUserInfo() {
+    userId = widget.userInfo['userId'] ?? '';
+    token = widget.userInfo['token'] ?? '';
+    name = widget.userInfo['name'] ?? '';
+    nickname = widget.userInfo['nickname'] ?? '';
+    phone = widget.userInfo['phone'] ?? '';
+    level = widget.userInfo['level'] ?? 0;
+    manner = widget.userInfo['manner'] ?? '';
+    manner = utf8.decode(widget.userInfo['manner'].runes.toList());
+    longitude = widget.userInfo['longitude']?.toDouble() ?? 0.0;
+    latitude = widget.userInfo['latitude']?.toDouble() ?? 0.0;
+    distanceMeters = widget.userInfo['distanceMeters'] ?? 0;
+    registerDate = DateTime.parse(widget.userInfo['registerDate'] ?? DateTime.now().toIso8601String());
+    profileImage = widget.userInfo['profileImage'] ?? '';
+  }
+
+  Future<void> findUserLevel(BuildContext context) async {
+    String url = 'http://10.0.2.2:8080/user/$userId/level';
+
+    try {
+      final response = await http.get(
+        Uri.parse(url),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': token,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+
+        setState(() {
+          userUid = data['userUid'];
+          level = data['level'];
+          currentPurchaseCount = data['currentPurchaseCount'];
+          needPurchaseCount = data['needPurchaseCount'];
+        });
+
+      } else {
+        _showErrorDialog('오류', '서버에서 오류가 발생했습니다.');
+      }
+    } catch (e) {
+      _showErrorDialog('오류', '서버와의 연결 오류가 발생했습니다.');
+    }
+  }
+
+  Future<void> findUserSavingCose(BuildContext context) async {
+    String url = 'http://10.0.2.2:8080/user/$userId/saving';
+
+    try {
+      final response = await http.get(
+        Uri.parse(url),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': token,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+
+        setState(() {
+          savingCost = data['savingCost'];
+        });
+
+      } else {
+        _showErrorDialog('오류', '서버에서 오류가 발생했습니다.');
+      }
+    } catch (e) {
+      _showErrorDialog('오류', '서버와의 연결 오류가 발생했습니다.');
+    }
+  }
+
+  void _showErrorDialog(String title, String content) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(content),
+          actions: <Widget>[
+            TextButton(
+              child: Text('확인'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _fetchAddress() async {
+    address = await LocationService().getAddressFromCoordinates(latitude, longitude);
+    setState(() {});
   }
 
   @override
@@ -87,7 +207,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
   void _loadBannerAd() {
     _bannerAd = BannerAd(
-      adUnitId: 'ca-app-pub-3940256099942544/9214589741', // 배너 광고 테스트 ID
+      adUnitId: 'ca-app-pub-3940256099942544/9214589741',
       size: AdSize.banner,
       request: AdRequest(),
       listener: BannerAdListener(
@@ -102,8 +222,12 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         },
       ),
     );
-
     _bannerAd!.load();
+  }
+
+  String formatCurrency(int amount) {
+    final formatter = NumberFormat('#,###');
+    return formatter.format(amount);
   }
 
   void _onItemTapped(int index) {
@@ -121,7 +245,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   void _showSearchOptions(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      isScrollControlled: true, // 전체 높이 제어
+      isScrollControlled: true,
       backgroundColor: Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -158,7 +282,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                   Slider(
                     value: _currentDistanceValue,
                     min: 0,
-                    max: 10, // 최대 거리를 10km로 설정 (원하는 값으로 변경 가능)
+                    max: 10,
                     divisions: 10,
                     label: '${_currentDistanceValue.toStringAsFixed(1)} km',
                     onChanged: (value) {
@@ -170,7 +294,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                     inactiveColor: Colors.grey,
                   ),
                   Text(
-                    '~ ${_currentDistanceValue.toStringAsFixed(1)}km', // 현재 거리 값을 실시간으로 표시
+                    '~ ${_currentDistanceValue.toStringAsFixed(1)}km',
                     style: TextStyle(color: Colors.grey),
                   ),
                   SizedBox(height: 16),
@@ -225,7 +349,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                         ),
                         child: Text('초기화'),
                       ),
-                      SizedBox(width: 10), // 초기화 버튼과 적용하기 버튼 사이의 간격
+                      SizedBox(width: 10),
                       Expanded(
                         child: TextButton(
                           onPressed: () {},
@@ -251,8 +375,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     );
   }
 
-  Widget _buildToggleButton(String label, String option1, String option2,
-      String selectedValue, ValueChanged<String> onChanged) {
+  Widget _buildToggleButton(String label, String option1, String option2, String selectedValue, ValueChanged<String> onChanged) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -313,8 +436,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       },
       style: OutlinedButton.styleFrom(
         padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        backgroundColor:
-        _selectedChatFilter == label ? Colors.grey.shade200 : Colors.white,
+        backgroundColor: _selectedChatFilter == label ? Colors.grey.shade200 : Colors.white,
         side: BorderSide(
           color: _selectedChatFilter == label ? Colors.black : Colors.grey,
         ),
@@ -329,16 +451,12 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         Navigator.push(
           context,
           PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                PostDetailPage(),
+            pageBuilder: (context, animation, secondaryAnimation) => PostDetailPage(),
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              const begin = Offset(1.0, 0.0); // 오른쪽에서 시작
+              const begin = Offset(1.0, 0.0);
               const end = Offset.zero;
               const curve = Curves.ease;
-
-              var tween = Tween(begin: begin, end: end)
-                  .chain(CurveTween(curve: curve));
-
+              var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
               return SlideTransition(
                 position: animation.drive(tween),
                 child: child,
@@ -359,7 +477,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
               SizedBox(height: 8),
               Row(
                 children: [
-                  Icon(Icons.image, size: 50, color: Colors.grey), // 임시 아이콘
+                  Icon(Icons.image, size: 50, color: Colors.grey),
                   SizedBox(width: 10),
                   Expanded(
                     child: Column(
@@ -426,16 +544,12 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         Navigator.push(
           context,
           PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                PostDetailPage(),
+            pageBuilder: (context, animation, secondaryAnimation) => PostDetailPage(),
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              const begin = Offset(1.0, 0.0); // 오른쪽에서 시작
+              const begin = Offset(1.0, 0.0);
               const end = Offset.zero;
               const curve = Curves.ease;
-
-              var tween = Tween(begin: begin, end: end)
-                  .chain(CurveTween(curve: curve));
-
+              var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
               return SlideTransition(
                 position: animation.drive(tween),
                 child: child,
@@ -444,7 +558,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           ),
         );
       },
-      splashColor: Colors.purple.withOpacity(0.3), // 물결 효과 색상
+      splashColor: Colors.purple.withOpacity(0.3),
       child: Card(
         margin: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
         child: Padding(
@@ -455,7 +569,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.image, size: 60, color: Colors.grey), // 임시 이미지 아이콘
+                  Icon(Icons.image, size: 60, color: Colors.grey),
                   SizedBox(width: 16),
                   Expanded(
                     child: Column(
@@ -495,16 +609,12 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         Navigator.push(
           context,
           PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                PostDetailPage(),
+            pageBuilder: (context, animation, secondaryAnimation) => PostDetailPage(),
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              const begin = Offset(1.0, 0.0); // 오른쪽에서 시작
+              const begin = Offset(1.0, 0.0);
               const end = Offset.zero;
               const curve = Curves.ease;
-
-              var tween = Tween(begin: begin, end: end)
-                  .chain(CurveTween(curve: curve));
-
+              var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
               return SlideTransition(
                 position: animation.drive(tween),
                 child: child,
@@ -513,7 +623,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           ),
         );
       },
-      splashColor: Colors.purple.withOpacity(0.3), // 물결 효과 색상
+      splashColor: Colors.purple.withOpacity(0.3),
       child: Card(
         margin: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
         child: Padding(
@@ -521,7 +631,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: const [
-              Icon(Icons.image, size: 60, color: Colors.grey), // 임시 이미지 아이콘
+              Icon(Icons.image, size: 60, color: Colors.grey),
               SizedBox(width: 16),
               Expanded(
                 child: Column(
@@ -570,9 +680,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
   @override
   Widget build(BuildContext context) {
-    // widget.userInfo에 접근하여 유저 정보를 사용할 수 있습니다.
-    String nickname = widget.userInfo['nickname'] ?? '사용자';
-
     List<Widget> widgetOptions = <Widget>[
       ListView.builder(
         itemCount: posts.length,
@@ -602,9 +709,9 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                 final chat = chatItems[index];
                 return ListTile(
                   leading: Icon(
-                    Icons.image, // 임시로 사용할 아이콘
-                    size: 50, // 아이콘 크기
-                    color: Colors.grey, // 아이콘 색상
+                    Icons.image,
+                    size: 50,
+                    color: Colors.grey,
                   ),
                   title: Text(chat['title']!),
                   subtitle: Row(
@@ -624,7 +731,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                             ),
                           ),
                           Positioned(
-                            left: 8, // 겹치는 정도 조절, 이 값이 NaN이 아님을 확인
+                            left: 8,
                             child: CircleAvatar(
                               radius: 10,
                               backgroundColor: Colors.grey,
@@ -646,16 +753,12 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                     Navigator.push(
                       context,
                       PageRouteBuilder(
-                        pageBuilder: (context, animation, secondaryAnimation) =>
-                            ChatRoomPage(),
+                        pageBuilder: (context, animation, secondaryAnimation) => ChatRoomPage(),
                         transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                          const begin = Offset(1.0, 0.0); // 오른쪽에서 시작
+                          const begin = Offset(1.0, 0.0);
                           const end = Offset.zero;
                           const curve = Curves.ease;
-
-                          var tween = Tween(begin: begin, end: end)
-                              .chain(CurveTween(curve: curve));
-
+                          var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
                           return SlideTransition(
                             position: animation.drive(tween),
                             child: child,
@@ -700,27 +803,47 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               SizedBox(height: 20),
-              CircleAvatar(
-                radius: 40,
-                backgroundColor: Colors.grey.shade300,
-                child: Icon(Icons.person, size: 50, color: Colors.white),
-              ),
-              SizedBox(height: 10),
-              Text(
-                nickname, // 유저 이름 표시
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
+              Container(
+                padding: EdgeInsets.all(2.0),
+                decoration: BoxDecoration(
+                  color: Color(0xFFB34FD1),
+                  shape: BoxShape.circle,
                 ),
-              ),
-              Text(
-                '서울시 서대문구 남가좌동',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey,
+                child: CircleAvatar(
+                  radius: 40,
+                  backgroundColor: Colors.grey.shade300,
+                  backgroundImage: profileImage.isNotEmpty
+                      ? NetworkImage(profileImage)
+                      : null,
+                  child: profileImage.isEmpty
+                      ? Icon(Icons.person, size: 50, color: Colors.white)
+                      : null,
                 ),
               ),
               SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.baseline,
+                textBaseline: TextBaseline.alphabetic,
+                children: [
+                  Text(
+                    'Lv.$level',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFFB34FD1),
+                    ),
+                  ),
+                  SizedBox(width: 15),  // 간격을 자연스럽게 조절
+                  Text(
+                    nickname,
+                    style: TextStyle(
+                      fontSize: 24,  // 닉네임을 강조하기 위해 더 크게 설정
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
               ElevatedButton(
                 onPressed: () {
                   Navigator.push(
@@ -739,49 +862,60 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
               SizedBox(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: const [
+                crossAxisAlignment: CrossAxisAlignment.baseline,
+                textBaseline: TextBaseline.alphabetic,
+                children: [
                   Column(
                     children: [
-                      Text('레벨', style: TextStyle(fontSize: 16)),
+                      Text('현재 거래 횟수', style: TextStyle(fontSize: 16, color: Color(0xFFB34FD1))),
                       SizedBox(height: 10),
-                      Text('10회', style: TextStyle(fontSize: 18, color: Colors.purple)),
-                      SizedBox(height: 10),
-                      Text('20회', style: TextStyle(fontSize: 16, color: Colors.grey)),
+                      Text(
+                        '$currentPurchaseCount / $needPurchaseCount',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        '다음 레벨까지 ${(needPurchaseCount - currentPurchaseCount).abs()}번 남음',
+                        style: TextStyle(fontSize: 14, color: Colors.grey),
+                      ),
                     ],
                   ),
                   Column(
                     children: [
-                      Text('매너도', style: TextStyle(fontSize: 16)),
+                      Text('매너도', style: TextStyle(fontSize: 16, color: Color(0xFFB34FD1))),
                       SizedBox(height: 10),
-                      Icon(Icons.favorite, color: Colors.pink),
-                      Text('9.5', style: TextStyle(fontSize: 18, color: Colors.purple)),
+                      Text(
+                        manner,
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
                     ],
                   ),
                 ],
               ),
               SizedBox(height: 20),
               ListTile(
-                leading: Icon(Icons.location_on),
-                title: Text('나의 위치'),
-                subtitle: Text('서울시 서대문구 남가좌동'),
+                leading: Icon(Icons.location_on, color: Colors.purple),
+                title: Text('나의 위치', style: TextStyle(color: Color(0xFFB34FD1))),
+                subtitle: Text(address),
               ),
               ListTile(
-                leading: Icon(Icons.calendar_today),
-                title: Text('가입일'),
-                subtitle: Text('2024/01/20'),
+                leading: Icon(Icons.calendar_today, color: Colors.purple),
+                title: Text('가입일', style: TextStyle(color: Color(0xFFB34FD1))),
+                subtitle: Text('${registerDate.year}/${registerDate.month}/${registerDate.day}',
+                    style: TextStyle(fontSize: 18)),
               ),
               ListTile(
-                leading: Icon(Icons.money),
-                title: Text('모구로 아낌비용'),
+                leading: Icon(Icons.money, color: Colors.purple),
+                title: Text('모구로 아낌비용', style: TextStyle(color: Color(0xFFB34FD1))),
                 subtitle: Text(
-                  '25,600원',
-                  style: TextStyle(fontSize: 20, color: Colors.pink),
+                  '${formatCurrency(savingCost)}원',
+                  style: TextStyle(fontSize: 18),
                 ),
               ),
             ],
           ),
         ),
-      ),
+      )
     ];
 
     return Scaffold(
@@ -794,16 +928,12 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             Navigator.push(
               context,
               PageRouteBuilder(
-                pageBuilder: (context, animation, secondaryAnimation) =>
-                    MenuPage(),
+                pageBuilder: (context, animation, secondaryAnimation) => MenuPage(),
                 transitionsBuilder: (context, animation, secondaryAnimation, child) {
                   const begin = Offset(-1.0, 0.0);
                   const end = Offset.zero;
                   const curve = Curves.ease;
-
-                  var tween = Tween(begin: begin, end: end)
-                      .chain(CurveTween(curve: curve));
-
+                  var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
                   return SlideTransition(
                     position: animation.drive(tween),
                     child: child,
@@ -813,14 +943,14 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             );
           },
         )
-            : null, // 홈 화면이 아니면 leading을 null로 설정
+            : null,
         title: _selectedIndex == 0
             ? null
             : Text(
           ['채팅목록', '모구내역', '마이페이지'][_selectedIndex - 1],
           style: TextStyle(
             color: Color(0xFFFFD3F0),
-            fontWeight: FontWeight.bold, // 글자 두껍게 설정
+            fontWeight: FontWeight.bold,
           ),
         ),
         flexibleSpace: Container(
@@ -846,7 +976,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
               indicatorSize: TabBarIndicatorSize.tab,
               indicator: UnderlineTabIndicator(
                 borderSide: BorderSide(color: Color(0xFFB34FD1), width: 3),
-                insets: EdgeInsets.symmetric(horizontal: 0.0), // 탭 아래의 선을 넓게 설정
+                insets: EdgeInsets.symmetric(horizontal: 0.0),
               ),
               tabs: const [
                 Tab(text: '나의 참여'),
@@ -857,7 +987,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         )
             : null,
         actions: [
-          if (_selectedIndex == 0) // 홈 화면일 때만 검색 버튼을 표시
+          if (_selectedIndex == 0)
             IconButton(
               icon: Icon(Icons.search),
               color: Color(0xFFFFD3F0),
@@ -865,16 +995,12 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                 Navigator.push(
                   context,
                   PageRouteBuilder(
-                    pageBuilder: (context, animation, secondaryAnimation) =>
-                        SearchPage(),
+                    pageBuilder: (context, animation, secondaryAnimation) => SearchPage(),
                     transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                      const begin = Offset(1.0, 0.0); // 오른쪽에서 시작
+                      const begin = Offset(1.0, 0.0);
                       const end = Offset.zero;
                       const curve = Curves.ease;
-
-                      var tween = Tween(begin: begin, end: end)
-                          .chain(CurveTween(curve: curve));
-
+                      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
                       return SlideTransition(
                         position: animation.drive(tween),
                         child: child,
@@ -885,25 +1011,19 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
               },
             ),
           IconButton(
-            icon: Icon(
-              _selectedIndex == 3 ? Icons.settings : Icons.notifications,
-            ),
+            icon: Icon(_selectedIndex == 3 ? Icons.settings : Icons.notifications),
             color: Color(0xFFFFD3F0),
             onPressed: () {
               if (_selectedIndex != 3) {
                 Navigator.push(
                   context,
                   PageRouteBuilder(
-                    pageBuilder: (context, animation, secondaryAnimation) =>
-                        NotificationPage(),
+                    pageBuilder: (context, animation, secondaryAnimation) => NotificationPage(),
                     transitionsBuilder: (context, animation, secondaryAnimation, child) {
                       const begin = Offset(1.0, 0.0);
                       const end = Offset.zero;
                       const curve = Curves.ease;
-
-                      var tween = Tween(begin: begin, end: end)
-                          .chain(CurveTween(curve: curve));
-
+                      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
                       return SlideTransition(
                         position: animation.drive(tween),
                         child: child,
@@ -986,7 +1106,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       )
           : Column(
         children: <Widget>[
-          if (_selectedIndex == 0 && _isAdLoaded) // 홈 화면일 때만 배너 광고 표시
+          if (_selectedIndex == 0 && _isAdLoaded)
             Container(
               alignment: Alignment.center,
               width: _bannerAd!.size.width.toDouble(),
@@ -997,23 +1117,20 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween, // 왼쪽과 오른쪽에 요소 배치
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   IconButton(
-                    icon: SvgPicture.asset(
-                        "assets/icons/search_filter.svg"
-                    ),
+                    icon: SvgPicture.asset("assets/icons/search_filter.svg"),
                     onPressed: () {
-                      _showSearchOptions(context); // 검색 옵션 모달 창을 띄움
+                      _showSearchOptions(context);
                     },
                   ),
                   DropdownButton<String>(
                     value: _selectedSortOption,
-                    items: _sortOptions
-                        .map<DropdownMenuItem<String>>((String value) {
+                    items: _sortOptions.map<DropdownMenuItem<String>>((String value) {
                       return DropdownMenuItem<String>(
                         value: value,
-                        child: Text(value, style: TextStyle(color: Color(0xFFB34FD1)),),
+                        child: Text(value, style: TextStyle(color: Color(0xFFB34FD1))),
                       );
                     }).toList(),
                     onChanged: _onSortOptionChanged,
@@ -1024,7 +1141,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
               ),
             ),
           Expanded(
-            child: widgetOptions[_selectedIndex], // 선택된 탭에 따라 다른 화면을 보여줌
+            child: widgetOptions[_selectedIndex],
           ),
         ],
       ),
@@ -1032,9 +1149,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         items: [
           BottomNavigationBarItem(
             icon: SvgPicture.asset(
-              _selectedIndex == 0
-                  ? "assets/icons/selected_home.svg"
-                  : "assets/icons/unselected_home.svg",
+              _selectedIndex == 0 ? "assets/icons/selected_home.svg" : "assets/icons/unselected_home.svg",
               width: 24,
               height: 24,
               fit: BoxFit.contain,
@@ -1043,9 +1158,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           ),
           BottomNavigationBarItem(
             icon: SvgPicture.asset(
-              _selectedIndex == 1
-                  ? "assets/icons/selected_chat.svg"
-                  : "assets/icons/unselected_chat.svg",
+              _selectedIndex == 1 ? "assets/icons/selected_chat.svg" : "assets/icons/unselected_chat.svg",
               width: 24,
               height: 24,
               fit: BoxFit.contain,
@@ -1054,9 +1167,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           ),
           BottomNavigationBarItem(
             icon: SvgPicture.asset(
-              _selectedIndex == 2
-                  ? "assets/icons/selected_history.svg"
-                  : "assets/icons/unselected_history.svg",
+              _selectedIndex == 2 ? "assets/icons/selected_history.svg" : "assets/icons/unselected_history.svg",
               width: 24,
               height: 24,
               fit: BoxFit.contain,
@@ -1065,9 +1176,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           ),
           BottomNavigationBarItem(
             icon: SvgPicture.asset(
-              _selectedIndex == 3
-                  ? "assets/icons/selected_my_page.svg"
-                  : "assets/icons/unselected_my_page.svg",
+              _selectedIndex == 3 ? "assets/icons/selected_my_page.svg" : "assets/icons/unselected_my_page.svg",
               width: 24,
               height: 24,
               fit: BoxFit.contain,
@@ -1084,13 +1193,13 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           ? ClipOval(
         child: Material(
           child: InkWell(
-            splashColor: Colors.white.withOpacity(0.3), // 물결 효과 색상
+            splashColor: Colors.white.withOpacity(0.3),
             onTap: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => PostCreatePage(),
-                ), // PostCreatePage로 이동
+                ),
               );
             },
             child: SizedBox(
@@ -1109,7 +1218,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           ),
         ),
       )
-          : null, // 홈 화면에서만 플로팅 액션 버튼을 표시
+          : null,
     );
   }
 }

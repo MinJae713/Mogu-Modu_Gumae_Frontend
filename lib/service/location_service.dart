@@ -55,40 +55,57 @@ class LocationService {
   Future<String> getAddressFromCoordinates(double latitude, double longitude) async {
     String apiKey = dotenv.env['VWORLD_API_KEY'] ?? 'API_KEY_NOT_FOUND';
 
-    latitude = truncateCoordinate(latitude, precision: 3);
-    longitude = truncateCoordinate(longitude, precision: 3);
+    for (int precision = 6; precision >= 3; precision--) {
+      String address = await _tryGetAddress(latitude, longitude, apiKey, precision);
+      if (address.isNotEmpty && address != '알 수 없는 위치') {
+        return address;
+      }
+    }
 
+    // 소수점 3자리에서 0.001씩 추가하며 검색
+    for (int i = 0; i < 10; i++) {
+      String address = await _tryGetAddress(latitude, longitude, apiKey, 3);
+      if (address.isNotEmpty && address != '알 수 없는 위치') {
+        return address;
+      }
+
+      latitude += 0.001;
+      longitude += 0.001;
+    }
+
+    return '알 수 없는 위치';
+  }
+
+  // 지정된 소수점 이하 자리수로 좌표를 줄이고, 주소 검색을 시도하는 내부 함수
+  Future<String> _tryGetAddress(double latitude, double longitude, String apiKey, int precision) async {
     String baseUrl =
         'https://api.vworld.kr/req/address?service=address&request=getAddress&key=$apiKey&point=';
 
+    latitude = truncateCoordinate(latitude, precision: precision);
+    longitude = truncateCoordinate(longitude, precision: precision);
+
+    String url = '$baseUrl$longitude,$latitude&type=ROAD';
+    print('Sending request to: $url');
+
     try {
-      for (int i = 0; i < 10; i++) {
-        String url = '$baseUrl$longitude,$latitude&type=ROAD';
-        print('Sending request to: $url');
-        final response = await http.get(Uri.parse(url));
-
-        if (response.statusCode == 200) {
-          var jsonResponse = json.decode(response.body);
-
-          if (jsonResponse['response'] != null && jsonResponse['response']['status'] == 'OK') {
-            var results = jsonResponse['response']['result'];
-            if (results != null && results.isNotEmpty) {
-              var address = results[0]['text'];
-              print('Address found: $address');
-              return address;
-            }
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        var jsonResponse = json.decode(response.body);
+        if (jsonResponse['response'] != null && jsonResponse['response']['status'] == 'OK') {
+          var results = jsonResponse['response']['result'];
+          if (results != null && results.isNotEmpty) {
+            var address = results[0]['text'];
+            print('Address found: $address');
+            return address;
           }
         }
-
-        latitude += 0.001;
-        longitude += 0.001;
       }
-
-      return '알 수 없는 위치';
     } catch (e) {
       print('Exception caught: $e');
       return '네트워크 오류가 발생했습니다';
     }
+
+    return '알 수 없는 위치';
   }
 
   // 좌표 값을 지정된 소수점 이하 자리수로 줄이는 함수

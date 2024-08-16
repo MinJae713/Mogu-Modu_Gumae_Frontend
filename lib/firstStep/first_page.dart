@@ -40,7 +40,7 @@ class FirstPage extends StatelessWidget {
                             children: [
                               _buildButton('구글로 로그인', () {}),
                               SizedBox(height: screenHeight * 0.01),
-                              _buildButton('로그인으로 시작하기', () {
+                              _buildButton('이메일로 로그인하기', () {
                                 Navigator.push(
                                   context,
                                   PageRouteBuilder(
