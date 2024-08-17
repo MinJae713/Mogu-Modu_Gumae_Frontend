@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 
 import '../../firstStep/loading_page.dart';
@@ -164,10 +165,9 @@ class _AccountManagementPage extends State<AccountManagementPage> {
               onPressed: () {
                 Navigator.of(context).pop();
                 if (title == '성공' && content == '회원탈퇴에 성공하였습니다.') {
-                  Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(
-                      builder: (context) => LoadingPage(), // LoadingPage로 이동
-                    ),
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (context) => LoadingPage()),
+                        (Route<dynamic> route) => false,
                   );
                 }
               },
@@ -254,7 +254,7 @@ class _AccountManagementPage extends State<AccountManagementPage> {
                     style: TextStyle(
                       fontSize: 16,
                       color: Colors.black,
-                      decoration: TextDecoration.underline, // 밑줄 추가
+                      decoration: TextDecoration.underline,
                     ),
                   ),
                 ),
@@ -270,10 +270,10 @@ class _AccountManagementPage extends State<AccountManagementPage> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center, // Aligns the row items vertically centered
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           SizedBox(
-            width: 80, // Provide a fixed width for titles to align them properly
+            width: 80,
             child: Text(
               title,
               style: TextStyle(
@@ -294,12 +294,12 @@ class _AccountManagementPage extends State<AccountManagementPage> {
                 ),
                 if (hasButton)
                   Padding(
-                    padding: const EdgeInsets.only(left: 8.0), // 텍스트와 버튼 사이의 간격을 조정
+                    padding: const EdgeInsets.only(left: 8.0),
                     child: ElevatedButton(
                       onPressed: _showPasswordChangeDialog,
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.white,
-                        backgroundColor: Color(0xFF5F5F5F), // 글자색을 흰색으로 설정
+                        backgroundColor: Color(0xFF5F5F5F),
                         minimumSize: Size(35, 25),
                         padding: EdgeInsets.zero,
                       ),

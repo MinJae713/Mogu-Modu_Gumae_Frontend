@@ -116,6 +116,48 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     profileImage = widget.userInfo['profileImage'] ?? '';
   }
 
+  Future<void> _getUpdatedUserInfo() async {
+    final updatedUserInfo = await fetchUpdatedUserInfo(userId, token);
+    if (updatedUserInfo != null) {
+      setState(() {
+        nickname = updatedUserInfo['nickname'] ?? nickname;
+        profileImage = updatedUserInfo['profileImage'] ?? profileImage;
+        longitude = updatedUserInfo['longitude'] ?? longitude;
+        latitude = updatedUserInfo['latitude'] ?? latitude;
+        address = updatedUserInfo['address'] ?? "주소를 찾을 수 없습니다.";
+      });
+    } else {
+      _showErrorDialog('오류', '사용자 정보를 불러올 수 없습니다.');
+    }
+  }
+
+  Future<Map<String, dynamic>?> fetchUpdatedUserInfo(String userId, String token) async {
+    String url = 'http://10.0.2.2:8080/user/$userId';
+
+    try {
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'Authorization': token,
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else if (response.statusCode == 401) {
+        _showErrorDialog('오류', '인증 오류: 로그인 정보가 유효하지 않습니다.');
+        return null;
+      } else {
+        _showErrorDialog('오류', '사용자 정보를 불러올 수 없습니다.');
+        return null;
+      }
+    } catch (e) {
+      _showErrorDialog('오류', '서버와의 연결 오류가 발생했습니다: ${e.toString()}');
+      return null;
+    }
+  }
+
   Future<void> findUserLevel(BuildContext context) async {
     String url = 'http://10.0.2.2:8080/user/$userId/level';
 
@@ -373,7 +415,13 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     );
   }
 
-  Widget _buildToggleButton(String label, String option1, String option2, String selectedValue, ValueChanged<String> onChanged) {
+  Widget _buildToggleButton(
+      String label,
+      String option1,
+      String option2,
+      String selectedValue,
+      ValueChanged<String> onChanged,
+      ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -832,11 +880,11 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                       color: Color(0xFFB34FD1),
                     ),
                   ),
-                  SizedBox(width: 15),  // 간격을 자연스럽게 조절
+                  SizedBox(width: 15), // 간격을 자연스럽게 조절
                   Text(
                     nickname,
                     style: TextStyle(
-                      fontSize: 24,  // 닉네임을 강조하기 위해 더 크게 설정
+                      fontSize: 24, // 닉네임을 강조하기 위해 더 크게 설정
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -859,13 +907,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                   );
 
                   if (updatedUserInfo != null) {
-                    setState(() {
-                      nickname = updatedUserInfo['nickname'] ?? nickname;
-                      profileImage = updatedUserInfo['profileImage'] ?? profileImage;
-                      longitude = updatedUserInfo['longitude'] ?? longitude;
-                      latitude = updatedUserInfo['latitude'] ?? latitude;
-                      address = updatedUserInfo['address'] ?? "주소를 찾을 수 없습니다.";
-                    });
+                    await _getUpdatedUserInfo(); // 프로필 수정 후 사용자 정보를 다시 가져옵니다.
                   }
                 },
                 style: ElevatedButton.styleFrom(
@@ -930,7 +972,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             ],
           ),
         ),
-      )
+      ),
     ];
 
     return Scaffold(
@@ -1064,7 +1106,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                 MaterialPageRoute(
                                   builder: (context) => AccountManagementPage(userInfo: widget.userInfo),
                                 ),
-                              );
+                              ).then((_) => _getUpdatedUserInfo());
                             },
                           ),
                           ListTile(
