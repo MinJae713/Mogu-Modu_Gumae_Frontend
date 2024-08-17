@@ -1075,7 +1075,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                 Navigator.push(
                   context,
                   PageRouteBuilder(
-                    pageBuilder: (context, animation, secondaryAnimation) => NotificationPage(),
+                    pageBuilder: (context, animation, secondaryAnimation) => NotificationPage(userInfo: widget.userInfo),
                     transitionsBuilder: (context, animation, secondaryAnimation, child) {
                       const begin = Offset(1.0, 0.0);
                       const end = Offset.zero;

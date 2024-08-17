@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
 import 'package:mogu_app/user/home/post/post_ask_review_page.dart';
 
 class NotificationPage extends StatefulWidget {
-  const NotificationPage({super.key});
+  const NotificationPage({super.key, required this.userInfo});
+
+  final Map<String, dynamic> userInfo;
 
   @override
   _NotificationPageState createState() => _NotificationPageState();
@@ -11,11 +16,13 @@ class NotificationPage extends StatefulWidget {
 class _NotificationPageState extends State<NotificationPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  List<Map<String, String>> notifications = [];
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    findAlarmSignal();
   }
 
   @override
@@ -24,16 +31,52 @@ class _NotificationPageState extends State<NotificationPage>
     super.dispose();
   }
 
+  Future<void> findAlarmSignal() async {
+    String url = 'http://10.0.2.2:8080/alarm/${widget.userInfo['userId']}';
+
+    try {
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        List<Map<String, dynamic>> data = List<Map<String, String>>.from(jsonDecode(response.body));
+        setState(() {
+          notifications = (data as List<dynamic>).map((item) {
+            return {
+              'title': item['content'] as String? ?? '알림 내용 없음',
+              'time': item['createdAt'] as String? ?? '시간 정보 없음',
+            };
+          }).toList();
+        });
+      } else {
+        _showErrorDialog('알림 불러오기 실패', '서버에서 오류가 발생했습니다.');
+      }
+    } catch (e) {
+      _showErrorDialog('오류', '서버와의 연결 오류가 발생했습니다.');
+    }
+  }
+
+  void _showErrorDialog(String title, String content) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(content),
+          actions: <Widget>[
+            TextButton(
+              child: Text('확인'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    // 알림 데이터 생성
-    List<Map<String, String>> notifications = List.generate(20, (index) {
-      return {
-        'title': '모비짱님이 참여신청 했습니다.',
-        'time': '${38 + index}초전',
-      };
-    });
-
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -74,7 +117,7 @@ class _NotificationPageState extends State<NotificationPage>
               indicatorSize: TabBarIndicatorSize.tab,
               indicator: UnderlineTabIndicator(
                 borderSide: BorderSide(color: Color(0xFFB34FD1), width: 3),
-                insets: EdgeInsets.symmetric(horizontal: 0.0), // 탭 아래의 선을 넓게 설정
+                insets: EdgeInsets.symmetric(horizontal: 0.0),
               ),
               tabs: const [
                 Tab(text: '참여알림'),
@@ -132,11 +175,16 @@ class _NotificationPageState extends State<NotificationPage>
               );
             },
           ),
-          Center(child: Text('새소식 탭 내용 표시')),
+          Center(
+            child: Text(
+              '새소식이 없습니다',
+              style: TextStyle(
+                color: Colors.grey,
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
 }
-
-
