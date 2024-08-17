@@ -1255,7 +1255,9 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => PostCreatePage(),
+                  builder: (context) => PostCreatePage(
+                    userInfo: widget.userInfo, // userInfo 전달
+                  ),
                 ),
               );
             },
