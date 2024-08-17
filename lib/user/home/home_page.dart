@@ -95,7 +95,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     _loadBannerAd();
     _tabController = TabController(length: 2, vsync: this);
     _initializeUserInfo();
-    _fetchAddress();
+    _getAddress();
     findUserLevel(context);
     findUserSavingCose(context);
   }
@@ -193,7 +193,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     );
   }
 
-  Future<void> _fetchAddress() async {
+  Future<void> _getAddress() async {
     address = await LocationService().getAddressFromCoordinates(latitude, longitude);
     setState(() {});
   }
@@ -849,7 +849,14 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => UpdateProfilePage(),
+                      builder: (context) => UpdateProfilePage(
+                        userId: userId,
+                        nickname: nickname,
+                        profileImage: profileImage,
+                        longitude: longitude,
+                        latitude: latitude,
+                        token: token,
+                      ),
                     ),
                   );
                 },
@@ -894,18 +901,18 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
               ),
               SizedBox(height: 20),
               ListTile(
-                leading: Icon(Icons.location_on, color: Colors.purple),
+                leading: Icon(Icons.location_on, color: Color(0xFFB34FD1)),
                 title: Text('나의 위치', style: TextStyle(color: Color(0xFFB34FD1))),
                 subtitle: Text(address),
               ),
               ListTile(
-                leading: Icon(Icons.calendar_today, color: Colors.purple),
+                leading: Icon(Icons.calendar_today, color: Color(0xFFB34FD1)),
                 title: Text('가입일', style: TextStyle(color: Color(0xFFB34FD1))),
                 subtitle: Text('${registerDate.year}/${registerDate.month}/${registerDate.day}',
                     style: TextStyle(fontSize: 18)),
               ),
               ListTile(
-                leading: Icon(Icons.money, color: Colors.purple),
+                leading: Icon(Icons.money, color: Color(0xFFB34FD1)),
                 title: Text('모구로 아낌비용', style: TextStyle(color: Color(0xFFB34FD1))),
                 subtitle: Text(
                   '${formatCurrency(savingCost)}원',

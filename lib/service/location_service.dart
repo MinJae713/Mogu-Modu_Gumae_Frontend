@@ -10,7 +10,6 @@ class LocationService {
   NaverMapController? _mapController;
   NLatLng? currentPosition;
 
-  // 현재 위치 초기화
   Future<NLatLng> initCurrentLocation() async {
     bool serviceEnabled;
     LocationPermission permission;
@@ -153,4 +152,3 @@ class LocationService {
     );
   }
 }
-
