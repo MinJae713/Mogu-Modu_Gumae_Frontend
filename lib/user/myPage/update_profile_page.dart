@@ -76,42 +76,6 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
     }
   }
 
-  Future<void> updateUserPassword(context) async {
-    // 서버의 엔드포인트 URL을 정의합니다.
-    final String url = 'http://10.0.2.2:8080/user/${widget.userId}/password';
-
-    // 요청에 포함될 데이터(Map)를 생성합니다.
-    final Map<String, String> requestData = {
-      'password': "123123123",
-    };
-
-    // 요청 헤더를 정의합니다. JSON 형식을 사용한다고 설정합니다.
-    final Map<String, String> headers = {
-      'Content-Type': 'application/json',
-    };
-
-    try {
-      // PATCH 요청을 보냅니다.
-      final http.Response response = await http.patch(
-        Uri.parse(url),
-        headers: headers,
-        body: jsonEncode(requestData),
-      );
-
-      // 서버 응답을 처리합니다.
-      if (response.statusCode == 200) {
-        print('Password updated successfully');
-        // 성공적으로 업데이트된 경우 처리 로직을 여기에 추가합니다.
-      } else {
-        print('Failed to update password: ${response.statusCode}');
-        // 실패한 경우 처리 로직을 여기에 추가합니다.
-      }
-    } catch (e) {
-      print('Exception occurred: $e');
-      // 예외 발생 시 처리 로직을 여기에 추가합니다.
-    }
-  }
-
   Future<void> _updateUser(BuildContext context) async {
     if (_nickname == widget.nickname &&
         _newProfileImage == null &&
@@ -138,7 +102,7 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
         await http.MultipartFile.fromPath(
           'image',
           _newProfileImage!.path,
-          contentType: MediaType('image', 'jpeg'), // 파일은 기본적으로 multipart/form-data로 처리됨
+          contentType: MediaType('image', 'jpeg'),
         ),
       );
     }
@@ -148,8 +112,20 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
       var response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+
+        // 서버로부터 새로운 프로필 이미지 URL을 받았다고 가정
+        final newProfileImageUrl = responseData['profileImageUrl'];
+        final newAddress = responseData['address'];
+
         await _showSuccessDialog('성공', '프로필을 수정하였습니다.').then((_) {
-          Navigator.pop(context);
+          Navigator.pop(context, {
+            'nickname': _nickname,
+            'profileImage': newProfileImageUrl,
+            'longitude': _longitude,
+            'latitude': _latitude,
+            'address': newAddress,
+          });
         });
       } else {
         print('Failed with status code: ${response.statusCode}');
@@ -305,7 +281,6 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                // updateUserPassword(context);
                 _updateUser(context);
               },
               style: ElevatedButton.styleFrom(

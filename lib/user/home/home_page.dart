@@ -137,7 +137,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           currentPurchaseCount = data['currentPurchaseCount'];
           needPurchaseCount = data['needPurchaseCount'];
         });
-
       } else {
         _showErrorDialog('오류', '서버에서 오류가 발생했습니다.');
       }
@@ -164,7 +163,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         setState(() {
           savingCost = data['savingCost'];
         });
-
       } else {
         _showErrorDialog('오류', '서버에서 오류가 발생했습니다.');
       }
@@ -845,8 +843,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                 ],
               ),
               ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
+                onPressed: () async {
+                  final updatedUserInfo = await Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => UpdateProfilePage(
@@ -859,6 +857,16 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                       ),
                     ),
                   );
+
+                  if (updatedUserInfo != null) {
+                    setState(() {
+                      nickname = updatedUserInfo['nickname'] ?? nickname;
+                      profileImage = updatedUserInfo['profileImage'] ?? profileImage;
+                      longitude = updatedUserInfo['longitude'] ?? longitude;
+                      latitude = updatedUserInfo['latitude'] ?? latitude;
+                      address = updatedUserInfo['address'] ?? "주소를 찾을 수 없습니다.";
+                    });
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   foregroundColor: Colors.black,
