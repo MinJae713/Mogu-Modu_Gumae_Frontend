@@ -1062,7 +1062,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => AccountManagementPage(),
+                                  builder: (context) => AccountManagementPage(userInfo: widget.userInfo),
                                 ),
                               );
                             },

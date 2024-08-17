@@ -1,13 +1,203 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+
+import '../../firstStep/loading_page.dart';
 
 class AccountManagementPage extends StatefulWidget {
-  const AccountManagementPage({super.key});
+  final Map<String, dynamic> userInfo;
+
+  const AccountManagementPage({super.key, required this.userInfo});
 
   @override
   _AccountManagementPage createState() => _AccountManagementPage();
 }
 
 class _AccountManagementPage extends State<AccountManagementPage> {
+  late String userId;
+  late String password;
+  late String name;
+  late String phone;
+
+  @override
+  void initState() {
+    super.initState();
+    userId = widget.userInfo['userId'] ?? 'N/A';
+    password = widget.userInfo['password'] ?? '********';  // password는 보통 표시하지 않거나 암호화된 형태로 보입니다.
+    name = widget.userInfo['name'] ?? 'N/A';
+    phone = _formatPhoneNumber(widget.userInfo['phone'] ?? 'N/A');
+  }
+
+  Future<void> updateUserPassword(BuildContext context, String newPassword) async {
+    String url = 'http://10.0.2.2:8080/user/${widget.userInfo['userId']}/password';
+
+    try {
+      final response = await http.patch(
+        Uri.parse(url),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(<String, String>{
+          "password": newPassword,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        _showSuccessDialog('성공', '비밀번호 변경에 성공하였습니다.');
+      } else {
+        _showErrorDialog('실패', '서버에서 오류가 발생했습니다.');
+      }
+    } catch (e) {
+      _showErrorDialog('오류', '서버와의 연결 오류가 발생했습니다.');
+    }
+  }
+
+  Future<void> deleteUser(BuildContext context) async {
+    String url = 'http://10.0.2.2:8080/user/${widget.userInfo['userId']}';
+
+    try {
+      final response = await http.delete(
+        Uri.parse(url),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+      );
+
+      if (response.statusCode == 204) {
+        _showSuccessDialog('성공', '회원탈퇴에 성공하였습니다.');
+      } else {
+        _showErrorDialog('실패', '서버에서 오류가 발생했습니다.');
+      }
+    } catch (e) {
+      _showErrorDialog('오류', '서버와의 연결 오류가 발생했습니다.');
+    }
+  }
+
+  String _formatPhoneNumber(String phoneNumber) {
+    if (phoneNumber.length == 11) {
+      return '${phoneNumber.substring(0, 3)}-${phoneNumber.substring(3, 7)}-${phoneNumber.substring(7)}';
+    } else if (phoneNumber.length == 10) {
+      return '${phoneNumber.substring(0, 3)}-${phoneNumber.substring(3, 6)}-${phoneNumber.substring(6)}';
+    } else {
+      return phoneNumber; // 포맷에 맞지 않는 경우 그대로 반환
+    }
+  }
+
+  void _showPasswordChangeDialog() {
+    final TextEditingController _newPasswordController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('비밀번호 변경'),
+          content: TextField(
+            controller: _newPasswordController,
+            obscureText: true,
+            maxLength: 16,
+            decoration: InputDecoration(
+              hintText: '새 비밀번호 입력 (8-16자리)',
+            ),
+          ),
+          actions: [
+            TextButton(
+              child: Text('취소'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('변경'),
+              onPressed: () {
+                final newPassword = _newPasswordController.text;
+                if (newPassword.length >= 8 && newPassword.length <= 16) {
+                  updateUserPassword(context, newPassword);
+                  Navigator.of(context).pop();
+                } else {
+                  _showErrorDialog('오류', '비밀번호는 8자리에서 16자리 사이여야 합니다.');
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showDeleteConfirmationDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('회원탈퇴'),
+          content: Text('정말로 탈퇴하시겠습니까?'),
+          actions: [
+            TextButton(
+              child: Text('취소'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('확인'),
+              onPressed: () {
+                deleteUser(context);
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showSuccessDialog(String title, String content) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(content),
+          actions: [
+            TextButton(
+              child: Text('확인'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                if (title == '성공' && content == '회원탈퇴에 성공하였습니다.') {
+                  Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(
+                      builder: (context) => LoadingPage(), // LoadingPage로 이동
+                    ),
+                  );
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showErrorDialog(String title, String content) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(content),
+          actions: [
+            TextButton(
+              child: Text('확인'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -50,20 +240,15 @@ class _AccountManagementPage extends State<AccountManagementPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildInfoRow('아이디', '10209210'),
-              _buildInfoRow('비밀번호', '********', hasButton: true),
-              _buildInfoRow('이름', '모지환'),
-              _buildInfoRow('성별', '남자'),
-              _buildInfoRow('전화번호', '01000000000'),
-              _buildInfoRow('주소', '서울 서대문구 남가좌동 명지대학교'),
-              _buildInfoRow('이메일', 'mobifan@gmail.com'),
+              _buildInfoRow('아이디', userId),
+              _buildInfoRow('비밀번호', password, hasButton: true),
+              _buildInfoRow('이름', name),
+              _buildInfoRow('전화번호', phone),
               SizedBox(height: 20),
               Align(
                 alignment: Alignment.centerRight,
                 child: GestureDetector(
-                  onTap: () {
-                    // 회원탈퇴 로직 추가
-                  },
+                  onTap: _showDeleteConfirmationDialog,
                   child: Text(
                     '회원탈퇴',
                     style: TextStyle(
@@ -111,11 +296,10 @@ class _AccountManagementPage extends State<AccountManagementPage> {
                   Padding(
                     padding: const EdgeInsets.only(left: 8.0), // 텍스트와 버튼 사이의 간격을 조정
                     child: ElevatedButton(
-                      onPressed: () {
-                        // 비밀번호 변경 로직 추가
-                      },
+                      onPressed: _showPasswordChangeDialog,
                       style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.white, backgroundColor: Color(0xFF5F5F5F), // 글자색을 흰색으로 설정
+                        foregroundColor: Colors.white,
+                        backgroundColor: Color(0xFF5F5F5F), // 글자색을 흰색으로 설정
                         minimumSize: Size(35, 25),
                         padding: EdgeInsets.zero,
                       ),
