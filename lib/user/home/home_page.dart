@@ -95,7 +95,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     _loadBannerAd();
     _tabController = TabController(length: 2, vsync: this);
     _initializeUserInfo();
-    _getAddress();
+    _getAddress(); // 초기 위치 정보를 가져오는 함수 호출
     findUserLevel(context);
     findUserSavingCose(context);
   }
@@ -122,10 +122,11 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       setState(() {
         nickname = updatedUserInfo['nickname'] ?? nickname;
         profileImage = updatedUserInfo['profileImage'] ?? profileImage;
-        longitude = updatedUserInfo['longitude'] ?? longitude;
-        latitude = updatedUserInfo['latitude'] ?? latitude;
-        address = updatedUserInfo['address'] ?? "주소를 찾을 수 없습니다.";
+        longitude = updatedUserInfo['longitude']?.toDouble() ?? longitude;
+        latitude = updatedUserInfo['latitude']?.toDouble() ?? latitude;
       });
+      // 주소를 업데이트된 경도와 위도를 통해 가져오기
+      await _getAddress();
     } else {
       _showErrorDialog('오류', '사용자 정보를 불러올 수 없습니다.');
     }
@@ -138,7 +139,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       final response = await http.get(
         Uri.parse(url),
         headers: {
-          'Authorization': token,
+          // 'Authorization': token,
           'Content-Type': 'application/json; charset=UTF-8',
         },
       );
@@ -155,6 +156,20 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     } catch (e) {
       _showErrorDialog('오류', '서버와의 연결 오류가 발생했습니다: ${e.toString()}');
       return null;
+    }
+  }
+
+  Future<void> _getAddress() async {
+    try {
+      String fetchedAddress = await LocationService().getAddressFromCoordinates(latitude, longitude);
+      setState(() {
+        address = fetchedAddress;
+      });
+    } catch (e) {
+      setState(() {
+        address = "주소를 가져올 수 없습니다.";
+      });
+      print('주소를 가져오는 중 오류 발생: $e');
     }
   }
 
@@ -231,11 +246,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         );
       },
     );
-  }
-
-  Future<void> _getAddress() async {
-    address = await LocationService().getAddressFromCoordinates(latitude, longitude);
-    setState(() {});
   }
 
   @override

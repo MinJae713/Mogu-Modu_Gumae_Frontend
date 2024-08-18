@@ -9,6 +9,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 class LocationService {
   NaverMapController? _mapController;
   NLatLng? currentPosition;
+  NLatLng? selectedPosition;
 
   Future<NLatLng> initCurrentLocation() async {
     bool serviceEnabled;
@@ -141,9 +142,11 @@ class LocationService {
               }
             },
             onMapTapped: (point, latLng) {
+              selectedPosition = latLng;
               Navigator.pop(context, latLng);
             },
             onSymbolTapped: (symbol) {
+              selectedPosition = symbol.position;
               Navigator.pop(context, symbol.position);
             },
           ),
