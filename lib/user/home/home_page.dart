@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
@@ -59,28 +59,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   String _selectedPurchaseStatus = '미구입';
   String _selectedChatFilter = '전체';
 
-  final List<Map<String, dynamic>> posts = [
-    {
-      'username': '김찬',
-      'distance': '1~2km',
-      'title': '방금 구매한 계란 5개씩 나누실분...',
-      'price': '2000원',
-      'participants': 2,
-      'maxParticipants': 3,
-      'likes': 7,
-      'comments': 23,
-    },
-    {
-      'username': '나혜리',
-      'distance': '500m 미만',
-      'title': '~~~원치에 물티슈 10개에 6000원 원하시는분',
-      'price': '2000원',
-      'participants': 2,
-      'maxParticipants': 3,
-      'likes': 7,
-      'comments': 23,
-    },
-  ];
+  final List<Map<String, dynamic>> posts = []; // 게시글 리스트 초기화
 
   final List<Map<String, String>> chatItems = List.generate(
     6,
@@ -99,6 +78,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     _getAddress(); // 초기 위치 정보를 가져오는 함수 호출
     findUserLevel(context);
     findUserSavingCose(context);
+    _findAllPost(context); // 초기화 시 모든 게시글을 불러옴
   }
 
   void _initializeUserInfo() {
@@ -116,6 +96,41 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     distanceMeters = widget.userInfo['distanceMeters'] ?? 0;
     registerDate = DateTime.parse(widget.userInfo['registerDate'] ?? DateTime.now().toIso8601String());
     profileImage = widget.userInfo['profileImage'] ?? '';
+  }
+
+  Future<void> _findAllPost(BuildContext context) async {
+    String url = 'http://${dotenv.env['SERVER_IP']}:${dotenv.env['SERVER_PORT']}/post/all/${widget.userInfo['userId']}';
+
+    try {
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        List<dynamic> responseData = jsonDecode(response.body);
+
+        setState(() {
+          posts.clear(); // 기존 게시글 리스트 초기화
+          for (var item in responseData) {
+            posts.add({
+              'username': item['userNickName'] ?? '알 수 없음',
+              'distance': '1~2km', // 거리는 서버에서 제공되지 않으므로 기본값 설정
+              'title': item['title'] ?? '제목 없음',
+              'price': '${item['pricePerCount'] ?? 0}원',
+              'participants': item['userCount'] ?? 0,
+              'maxParticipants': item['maxParticipants'] ?? 0,
+              'likes': item['heartCount'] ?? 0,
+              'comments': item['viewCount'] ?? 0,
+              'imageUrl': item['thumbnail'] ?? '',
+            });
+          }
+        });
+      } else {
+        print('Failed with status code: ${response.statusCode}');
+        _showErrorDialog('불러오기 실패', '서버에서 오류가 발생했습니다.');
+      }
+    } catch (e) {
+      print('Exception: $e');
+      _showErrorDialog('오류', '서버와의 연결 오류가 발생했습니다. 다시 시도해주세요.');
+    }
   }
 
   Future<void> _getUpdatedUserInfo() async {
@@ -141,7 +156,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       final response = await http.get(
         Uri.parse(url),
         headers: {
-          // 'Authorization': token,
           'Content-Type': 'application/json; charset=UTF-8',
         },
       );
@@ -282,7 +296,11 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     return formatter.format(amount);
   }
 
-  void _onItemTapped(int index) {
+  void _onItemTapped(int index) async {
+    if (index == 0) {
+      // 홈 화면이 선택된 경우에만 포스트 목록을 새로고침
+      await _findAllPost(context);
+    }
     setState(() {
       _selectedIndex = index;
     });
@@ -1400,8 +1418,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         child: Material(
           child: InkWell(
             splashColor: Colors.white.withOpacity(0.3),
-            onTap: () {
-              Navigator.push(
+            onTap: () async {
+              final result = await Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => PostCreatePage(
@@ -1409,6 +1427,11 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                   ),
                 ),
               );
+
+              if (result == true) {
+                // 포스트 생성 후 홈 화면에서 새로고침
+                await _findAllPost(context);
+              }
             },
             child: SizedBox(
               width: 56,

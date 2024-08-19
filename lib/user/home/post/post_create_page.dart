@@ -101,16 +101,14 @@ class _PostCreatePageState extends State<PostCreatePage> {
         }
       }
 
-      print(request.fields);
-      print(request.files);
       try {
         var streamedResponse = await request.send();
         var response = await http.Response.fromStream(streamedResponse);
         if (response.statusCode == 201) {
-          final responseData = jsonDecode(response.body);
+          // final responseData = jsonDecode(response.body);
 
           await _showSuccessDialog('성공', '게시글을 성공적으로 등록했습니다.').then((_) {
-            Navigator.pop(context, responseData);
+            Navigator.pop(context, true);
           });
         } else {
           print(response.body);

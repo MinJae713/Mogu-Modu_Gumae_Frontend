@@ -48,7 +48,6 @@ class _LoginPageState extends State<LoginPage> {
         },
       );
 
-      print(response.statusCode);
       if (response.statusCode == 200) {
         String? token = response.headers['authorization'];
         if (token != null) {
