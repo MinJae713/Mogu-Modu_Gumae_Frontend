@@ -13,7 +13,7 @@ Future<void> initialize() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
   NaverMapSdk.instance.initialize(
-    clientId: dotenv.env['NAVER_API_KEY'] ?? 'API_KEY_NOT_FOUND',
+    clientId: dotenv.env['NAVER_MAP_API_KEY'] ?? 'API_KEY_NOT_FOUND',
   );
   await MobileAds.instance.initialize();
 }

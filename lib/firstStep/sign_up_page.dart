@@ -332,22 +332,47 @@ class _SignUpPageState extends State<SignUpPage> {
 
   Widget _buildPasswordField() {
     return _buildTextFieldWithLabel(
-        "패스워드", true, "패스워드를 입력하세요", passwordController,
-        obscureText: true);
+      "패스워드",
+      true,
+      "패스워드를 입력하세요",
+      passwordController,
+      obscureText: true,
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return '패스워드를 입력해주세요';
+        }
+
+        if (value.length < 8 || value.length > 16) {
+          return '패스워드는 8자에서 16자 사이여야 합니다';
+        }
+
+        final passwordRegExp = RegExp(r'^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%^&*?_]).{8,16}$');
+        if (!passwordRegExp.hasMatch(value)) {
+          return '비밀번호는 숫자, 영문, 특수문자 조합이어야 합니다.';
+        }
+
+        return null;
+      },
+    );
   }
 
   Widget _buildConfirmPasswordField() {
     return _buildTextFieldWithLabel(
-        "패스워드 확인", true, "패스워드를 다시 입력하세요", confirmPasswordController,
-        obscureText: true, validator: (value) {
-      if (value == null || value.isEmpty) {
-        return '패스워드 확인을 입력해주세요';
-      }
-      if (value != passwordController.text) {
-        return '서로 다른 비밀번호가 입력되었습니다';
-      }
-      return null;
-    });
+      "패스워드 확인",
+      true,
+      "패스워드를 다시 입력하세요",
+      confirmPasswordController,
+      obscureText: true,
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return '패스워드 확인을 입력해주세요';
+        }
+        if (value != passwordController.text) {
+          return '서로 다른 비밀번호가 입력되었습니다';
+        }
+        return null;
+      },
+    );
   }
 
   Widget _buildPhoneNumberField() {
@@ -495,6 +520,10 @@ class _SignUpPageState extends State<SignUpPage> {
                 } else if (labelText == "패스워드") {
                   if (value.length < 8 || value.length > 16) {
                     return '패스워드는 8자에서 16자 사이여야 합니다';
+                  }
+                  final passwordRegExp = RegExp(r'^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%^&*?_]).{8,16}$');
+                  if (!passwordRegExp.hasMatch(value)) {
+                    return '비밀번호는 숫자, 영문, 특수문자 조합이어야 합니다.';
                   }
                 } else if (labelText == "이름" || labelText == "닉네임") {
                   if (value.length > 12) {

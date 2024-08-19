@@ -37,7 +37,8 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
 
-    String loginUrl = 'http://${dotenv.env['SERVER_IP']}:${dotenv.env['SERVER_PORT']}/login?username=$username&password=$password';
+    String encodedPassword = Uri.encodeComponent(password);
+    String loginUrl = 'http://${dotenv.env['SERVER_IP']}:${dotenv.env['SERVER_PORT']}/login?username=$username&password=$encodedPassword';
 
     try {
       final response = await http.post(
