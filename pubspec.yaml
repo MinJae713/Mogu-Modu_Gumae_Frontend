@@ -51,6 +51,7 @@ flutter:
   - assets/icons/selected_member_management.svg
   - assets/icons/selected_complaint_management.svg
   - assets/icons/unselected_complaint_management.svg
+  - assets/icons/views.svg
   - .env
 
 flutter_native_splash:

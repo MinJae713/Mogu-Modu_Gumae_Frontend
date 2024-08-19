@@ -5,6 +5,7 @@ import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:http/http.dart' as http;
 import 'package:mogu_app/firstStep/login_page.dart';
 import 'package:mogu_app/service/location_service.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -61,8 +62,7 @@ class _SignUpPageState extends State<SignUpPage> {
       String nickname = nicknameController.text;
       String phone = phoneController.text.replaceAll('-', '');
 
-      String url = 'http://10.0.2.2:8080/user'; // 안드로이드 에뮬레이터의 경우
-      // String url = 'http://localhost:8080/user';
+      String url = 'http://${dotenv.env['SERVER_IP']}:${dotenv.env['SERVER_PORT']}/user';
 
       try {
         final response = await http.post(

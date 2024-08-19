@@ -14,7 +14,7 @@ class _LoadingPageState extends State<LoadingPage> {
   void initState() {
     super.initState();
     _requestPermissions().then((_) {
-      _navigateToNextPage();  // 권한 요청 후 항상 다음 페이지로 이동
+      _navigateToNextPage();
     });
   }
 

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
@@ -85,7 +86,7 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
       return;
     }
 
-    String url = 'http://10.0.2.2:8080/user/${widget.userId}';
+    String url = 'http://${dotenv.env['SERVER_IP']}:${dotenv.env['SERVER_PORT']}/user/${widget.userId}';
     var request = http.MultipartRequest('PATCH', Uri.parse(url));
 
     // JSON 데이터를 문자열로 변환하여 필드로 추가하고, Content-Type을 application/json으로 설정

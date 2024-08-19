@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
 import '../../firstStep/loading_page.dart';
@@ -30,7 +31,7 @@ class _AccountManagementPage extends State<AccountManagementPage> {
   }
 
   Future<void> updateUserPassword(BuildContext context, String newPassword) async {
-    String url = 'http://10.0.2.2:8080/user/${widget.userInfo['userId']}/password';
+    String url = 'http://${dotenv.env['SERVER_IP']}:${dotenv.env['SERVER_PORT']}/user/${widget.userInfo['userId']}/password';
 
     try {
       final response = await http.patch(
@@ -54,7 +55,7 @@ class _AccountManagementPage extends State<AccountManagementPage> {
   }
 
   Future<void> deleteUser(BuildContext context) async {
-    String url = 'http://10.0.2.2:8080/user/${widget.userInfo['userId']}';
+    String url = 'http://${dotenv.env['SERVER_IP']}:${dotenv.env['SERVER_PORT']}/user/${widget.userInfo['userId']}';
 
     try {
       final response = await http.delete(

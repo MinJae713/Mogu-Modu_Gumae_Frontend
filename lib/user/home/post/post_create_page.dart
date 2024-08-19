@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:mogu_app/service/location_service.dart';
@@ -68,7 +69,7 @@ class _PostCreatePageState extends State<PostCreatePage> {
 
   Future<void> _submitPost(BuildContext context) async {
     if (_validateInputs()) {
-      String url = 'http://10.0.2.2:8080/post/${widget.userInfo['userId']}';
+      String url = 'http://${dotenv.env['SERVER_IP']}:${dotenv.env['SERVER_PORT']}/post/${widget.userInfo['userId']}';
       var request = http.MultipartRequest('POST', Uri.parse(url));
 
       request.fields['request'] = jsonEncode({

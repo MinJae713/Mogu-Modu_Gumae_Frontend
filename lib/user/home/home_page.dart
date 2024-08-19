@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:http/http.dart' as http;
@@ -105,6 +106,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     token = widget.userInfo['token'] ?? '';
     name = widget.userInfo['name'] ?? '';
     nickname = widget.userInfo['nickname'] ?? '';
+    nickname = utf8.decode(widget.userInfo['nickname'].runes.toList());
     phone = widget.userInfo['phone'] ?? '';
     level = widget.userInfo['level'] ?? 0;
     manner = widget.userInfo['manner'] ?? '';
@@ -133,7 +135,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   }
 
   Future<Map<String, dynamic>?> fetchUpdatedUserInfo(String userId, String token) async {
-    String url = 'http://10.0.2.2:8080/user/$userId';
+    String url = 'http://${dotenv.env['SERVER_IP']}:${dotenv.env['SERVER_PORT']}/user/$userId';
 
     try {
       final response = await http.get(
@@ -502,95 +504,231 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   }
 
   Widget _buildPostCard(Map<String, dynamic> post) {
-    return InkWell(
-      onTap: () {
-        Navigator.push(
-          context,
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => PostDetailPage(),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              const begin = Offset(1.0, 0.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-              var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-              return SlideTransition(
-                position: animation.drive(tween),
-                child: child,
-              );
-            },
-          ),
-        );
-      },
-      splashColor: Colors.purple.withOpacity(0.2),
-      child: Card(
-        margin: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('${post['username']} • ${post['distance']}'),
-              SizedBox(height: 8),
-              Row(
-                children: [
-                  Icon(Icons.image, size: 50, color: Colors.grey),
-                  SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          post['title'],
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
-                        SizedBox(height: 4),
-                        Text(post['price'], style: TextStyle(color: Colors.purple)),
-                      ],
-                    ),
-                  ),
-                ],
+    bool isLiked = false; // 초기 상태로 하트를 누르지 않은 상태로 설정
+    int likeCount = post['likes']; // 초기 좋아요 수
+
+    return StatefulBuilder(
+      builder: (context, setState) {
+        return InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) => PostDetailPage(),
+                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                  const begin = Offset(1.0, 0.0);
+                  const end = Offset.zero;
+                  const curve = Curves.ease;
+                  var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                  return SlideTransition(
+                    position: animation.drive(tween),
+                    child: child,
+                  );
+                },
               ),
-              SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            );
+          },
+          splashColor: Color(0xFFB34FD1).withOpacity(0.2), // 카드 클릭 시 물결 효과 유지
+          child: Card(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15.0),
+            ),
+            elevation: 3,
+            margin: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // User info and location
                   Row(
                     children: [
-                      Stack(
-                        clipBehavior: Clip.none,
-                        children: const [
-                          CircleAvatar(
-                            radius: 12,
-                            backgroundColor: Colors.grey,
-                          ),
-                          Positioned(
-                            left: 12,
-                            child: CircleAvatar(
-                              radius: 12,
-                              backgroundColor: Colors.grey,
+                      CircleAvatar(
+                        radius: 20,
+                        backgroundImage: NetworkImage(
+                            "https://example.com/profile_image.jpg"), // Placeholder for profile image
+                      ),
+                      SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              post['username'],
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                             ),
+                          ],
+                        ),
+                      ),
+                      Row(
+                        children: const [
+                          Icon(Icons.place, color: Color(0xFFB34FD1), size: 16),
+                          SizedBox(width: 4),
+                          Text(
+                            '명지대사거리 우리은행 앞', // Placeholder location
+                            style: TextStyle(fontSize: 14, color: Colors.grey),
                           ),
                         ],
                       ),
-                      SizedBox(width: 8),
-                      Text('${post['participants']}/${post['maxParticipants']}'),
                     ],
                   ),
+                  SizedBox(height: 10),
+                  // Post title and image/icon
                   Row(
                     children: [
-                      Text('${post['likes']}'),
-                      Icon(Icons.thumb_up, size: 16, color: Colors.grey),
-                      SizedBox(width: 8),
-                      Text('${post['comments']}'),
-                      Icon(Icons.comment, size: 16, color: Colors.grey),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              post['title'],
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Container(
+                                  padding: EdgeInsets.symmetric(vertical: 2, horizontal: 8),
+                                  decoration: BoxDecoration(
+                                    color: Color(0xFFFFE6F7),
+                                    borderRadius: BorderRadius.circular(5),
+                                  ),
+                                  child: Text(
+                                    '모구가',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Color(0xFFB34FD1),
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: 8),
+                                Text(
+                                  post['price'],
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    color: Color(0xFFB34FD1),
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(width: 10),
+                      if (post['imageUrl'] != null && post['imageUrl'].isNotEmpty)
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Image.network(
+                            post['imageUrl'], // Actual image from post data
+                            width: 80,
+                            height: 80,
+                            fit: BoxFit.cover,
+                          ),
+                        )
+                      else
+                        Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade200,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Icon(
+                            Icons.image,
+                            size: 40,
+                            color: Colors.grey,
+                          ),
+                        ),
+                    ],
+                  ),
+                  SizedBox(height: 10),
+                  // Participant info, Mogoo deadline, and like/comment stats
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            '${post['participants']}/${post['maxParticipants']}',
+                            style: TextStyle(fontSize: 14, color: Colors.grey),
+                          ),
+                          SizedBox(width: 8),
+                          Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              CircleAvatar(
+                                radius: 12,
+                                backgroundColor: Colors.grey.shade300,
+                                child: Icon(
+                                  Icons.person,
+                                  size: 14,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              Positioned(
+                                left: 16,
+                                child: CircleAvatar(
+                                  radius: 12,
+                                  backgroundColor: Colors.grey.shade300,
+                                  child: Icon(
+                                    Icons.person,
+                                    size: 14,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(width: 20),
+                          Text(
+                            '모구 마감',
+                            style: TextStyle(fontSize: 12, color: Colors.grey),
+                          ),
+                          SizedBox(width: 4),
+                          Text(
+                            '12/32',
+                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                isLiked = !isLiked;
+                                likeCount += isLiked ? 1 : -1;
+                              });
+                            },
+                            child: Icon(
+                              isLiked ? Icons.favorite : Icons.favorite_border,
+                              size: 20, // 하트 아이콘의 크기를 20으로 설정
+                              color: Color(0xFFB34FD1),
+                            ),
+                          ),
+                          SizedBox(width: 4),
+                          Text('$likeCount', style: TextStyle(color: Color(0xFFB34FD1))),
+                          SizedBox(width: 16),
+                          SvgPicture.asset(
+                            'assets/icons/views.svg', // SVG 아이콘 경로
+                            width: 16,
+                            height: 16,
+                          ),
+                          SizedBox(width: 4),
+                          Text('${post['comments']}', style: TextStyle(color: Color(0xFFB34FD1))),
+                        ],
+                      ),
                     ],
                   ),
                 ],
-              )
-            ],
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 

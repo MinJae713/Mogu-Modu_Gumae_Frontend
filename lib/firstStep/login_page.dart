@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:mogu_app/user/home/home_page.dart';
 import 'package:mogu_app/admin/home/home_page_FA.dart';
 import 'package:http/http.dart' as http;
@@ -23,17 +24,20 @@ class _LoginPageState extends State<LoginPage> {
     String password = passwordController.text;
 
     if (username.isEmpty) {
-      _showErrorDialog('오류', '아이디를 입력해주세요');
+      if (mounted) {
+        _showErrorDialog('오류', '아이디를 입력해주세요');
+      }
       return;
     }
 
     if (password.isEmpty) {
-      _showErrorDialog('오류', '패스워드를 입력해주세요');
+      if (mounted) {
+        _showErrorDialog('오류', '패스워드를 입력해주세요');
+      }
       return;
     }
 
-    String loginUrl = 'http://10.0.2.2:8080/login?username=$username&password=$password';
-    // String loginUrl = 'http://localhost:8080/login?username=$username&password=$password';
+    String loginUrl = 'http://${dotenv.env['SERVER_IP']}:${dotenv.env['SERVER_PORT']}/login?username=$username&password=$password';
 
     try {
       final response = await http.post(
@@ -43,6 +47,7 @@ class _LoginPageState extends State<LoginPage> {
         },
       );
 
+      print(response.statusCode);
       if (response.statusCode == 200) {
         String? token = response.headers['authorization'];
         if (token != null) {
@@ -50,19 +55,30 @@ class _LoginPageState extends State<LoginPage> {
           final userInfo = await _getUserInfo(username, token);
           if (userInfo != null) {
             userInfo['token'] = token;  // 토큰을 userInfo에 추가
-            _navigateToHomePage(userInfo);
+            if (mounted) {
+              _navigateToHomePage(userInfo);
+            }
           } else {
-            _showErrorDialog('오류', '유저 정보를 가져올 수 없습니다.');
+            if (mounted) {
+              print(response.statusCode);
+              _showErrorDialog('오류', '유저 정보를 가져올 수 없습니다.');
+            }
           }
         } else {
-          _showErrorDialog('로그인 실패', '토큰을 찾을 수 없습니다.');
+          if (mounted) {
+            _showErrorDialog('로그인 실패', '토큰을 찾을 수 없습니다.');
+          }
         }
       } else {
         print(response.statusCode);
-        _showErrorDialog('로그인 실패', '로그인 정보를 확인해주세요.');
+        if (mounted) {
+          _showErrorDialog('로그인 실패', '로그인 정보를 확인해주세요.');
+        }
       }
     } catch (e) {
-      _showErrorDialog('오류', '서버와의 연결 오류가 발생했습니다.');
+      if (mounted) {
+        _showErrorDialog('오류', '서버와의 연결 오류가 발생했습니다.');
+      }
     }
   }
 
@@ -72,7 +88,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<Map<String, dynamic>?> _getUserInfo(String username, String token) async {
-    String userUrl = 'http://10.0.2.2:8080/user/$username';
+    String userUrl = 'http://${dotenv.env['SERVER_IP']}:${dotenv.env['SERVER_PORT']}/user/$username';
 
     try {
       final response = await http.get(
