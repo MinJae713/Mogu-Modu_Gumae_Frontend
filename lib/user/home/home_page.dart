@@ -197,12 +197,17 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         Uri.parse(url),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
-          'Authorization': token,
+          // 'Authorization': token,
         },
       );
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
+
+        print(data['userUid']);
+        print(data['level']);
+        print(data['currentPurchaseCount']);
+        print(data['needPurchaseCount']);
 
         setState(() {
           userUid = data['userUid'];
@@ -226,7 +231,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         Uri.parse(url),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
-          'Authorization': token,
+          // 'Authorization': token,
         },
       );
 

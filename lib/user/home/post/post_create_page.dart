@@ -763,11 +763,16 @@ class _PostCreatePageState extends State<PostCreatePage> {
                   ),
                 if (title == '모임 장소')
                   SizedBox(width: 4),
-                Text(
-                  value,
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Color(0xFFB34FD1),
+                Container(
+                  constraints: BoxConstraints(maxWidth: 200), // 텍스트 최대 너비를 설정하여 오버플로우 방지
+                  child: Text(
+                    value,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Color(0xFFB34FD1),
+                    ),
+                    overflow: TextOverflow.ellipsis, // 텍스트가 너무 길 경우 줄임표(...) 추가
+                    maxLines: 1, // 한 줄로 제한
                   ),
                 ),
                 if (icon != null && title != '모임 장소')
