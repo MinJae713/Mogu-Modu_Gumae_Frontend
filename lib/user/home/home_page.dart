@@ -590,16 +590,17 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                             Row(
                               children: [
                                 Container(
-                                  padding: EdgeInsets.symmetric(vertical: 2, horizontal: 8),
+                                  padding: EdgeInsets.symmetric(vertical: 4, horizontal: 12), // 패딩을 추가하여 더 강조
                                   decoration: BoxDecoration(
-                                    color: Color(0xFFFFE6F7),
-                                    borderRadius: BorderRadius.circular(5),
+                                    color: Color(0xFFFFD3F0),
+                                    borderRadius: BorderRadius.circular(8), // 모서리를 더 둥글게 처리
                                   ),
                                   child: Text(
                                     '모구가',
                                     style: TextStyle(
-                                      fontSize: 14,
+                                      fontSize: 16, // 글자 크기를 더 키움
                                       color: Color(0xFFB34FD1),
+                                      fontWeight: FontWeight.bold, // 글자 굵기 추가
                                     ),
                                   ),
                                 ),
