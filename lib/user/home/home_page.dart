@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -86,11 +87,9 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     token = widget.userInfo['token'] ?? '';
     name = widget.userInfo['name'] ?? '';
     nickname = widget.userInfo['nickname'] ?? '';
-    nickname = utf8.decode(widget.userInfo['nickname'].runes.toList());
     phone = widget.userInfo['phone'] ?? '';
     level = widget.userInfo['level'] ?? 0;
     manner = widget.userInfo['manner'] ?? '';
-    manner = utf8.decode(widget.userInfo['manner'].runes.toList());
     longitude = widget.userInfo['longitude']?.toDouble() ?? 0.0;
     latitude = widget.userInfo['latitude']?.toDouble() ?? 0.0;
     distanceMeters = widget.userInfo['distanceMeters'] ?? 0;
@@ -105,24 +104,46 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
-        List<dynamic> responseData = jsonDecode(response.body);
+        // 응답 데이터의 body를 UTF-8로 디코딩
+        String decodedBody = utf8.decode(response.bodyBytes);
+        List<dynamic> responseData = jsonDecode(decodedBody);
 
         setState(() {
           posts.clear(); // 기존 게시글 리스트 초기화
           for (var item in responseData) {
+            if (item['isHidden'] == true) {
+              continue; // isHidden이 true이면 해당 아이템을 건너뜁니다.
+            }
+
             posts.add({
-              'username': item['userNickName'] ?? '알 수 없음',
-              'distance': '1~2km', // 거리는 서버에서 제공되지 않으므로 기본값 설정
+              'id': item['id'] ?? 0,  // ID 추가
+              'category': item['category'] ?? '알 수 없음',  // 카테고리 추가
+              'isHidden': item['isHidden'] ?? false,  // 숨김 상태 추가
+              'recruitState': item['recruitState'] ?? '모집중',  // 모집 상태 추가
               'title': item['title'] ?? '제목 없음',
-              'price': '${item['pricePerCount'] ?? 0}원',
+              'userNickname': item['userNickname'] ?? '알 수 없음',
+              'userId': item['userId'] ?? 0,  // 사용자 ID 추가
+              'chiefPrice': item['chiefPrice'] ?? 0,  // 주최자 가격 추가
+              'originalPrice': item['originalPrice'] ?? 0,  // 원래 가격 추가
+              'shareCondition': item['shareCondition'] ?? false,  // 공유 조건 추가
+              'pricePerCount': item['pricePerCount'] ?? 0,  // 인당 가격 추가
               'participants': item['userCount'] ?? 0,
-              'maxParticipants': item['maxParticipants'] ?? 0,
+              'maxParticipants': item['maxParticipants'] ?? 0,  // 최대 참가자 수 추가
               'likes': item['heartCount'] ?? 0,
               'comments': item['viewCount'] ?? 0,
+              'reportCount': item['reportCount'] ?? 0,  // 신고 수 추가
+              'longitude': item['longitude']?.toDouble() ?? 0.0,  // 경도 추가
+              'latitude': item['latitude']?.toDouble() ?? 0.0,  // 위도 추가
               'imageUrl': item['thumbnail'] ?? '',
+              'postDate': item['postDate'] ?? '',  // 게시일 추가
+              'purchaseDate': item['purchaseDate'] ?? '',  // 구매일 추가
             });
           }
+
+          // 정렬 옵션에 따라 게시글 리스트를 정렬
+          _sortPosts();
         });
+        print(posts);
       } else {
         print('Failed with status code: ${response.statusCode}');
         _showErrorDialog('불러오기 실패', '서버에서 오류가 발생했습니다.');
@@ -131,6 +152,37 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       print('Exception: $e');
       _showErrorDialog('오류', '서버와의 연결 오류가 발생했습니다. 다시 시도해주세요.');
     }
+  }
+
+  void _sortPosts() {
+    if (_selectedSortOption == '최신순') {
+      posts.sort((a, b) => DateTime.parse(b['postDate']).compareTo(DateTime.parse(a['postDate'])));
+    } else if (_selectedSortOption == '가까운 순') {
+      posts.sort((a, b) {
+        double distanceA = _calculateDistance(latitude, longitude, a['latitude'], a['longitude']);
+        double distanceB = _calculateDistance(latitude, longitude, b['latitude'], b['longitude']);
+        return distanceA.compareTo(distanceB);
+      });
+    }
+  }
+
+  double _calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+    const double earthRadius = 6371.0; // km
+    double dLat = _degreesToRadians(lat2 - lat1);
+    double dLon = _degreesToRadians(lon2 - lon1);
+
+    double a =
+        sin(dLat / 2) * sin(dLat / 2) +
+            cos(_degreesToRadians(lat1)) * cos(_degreesToRadians(lat2)) *
+                sin(dLon / 2) * sin(dLon / 2);
+
+    double c = 2 * atan2(sqrt(a), sqrt(1 - a));
+
+    return earthRadius * c;
+  }
+
+  double _degreesToRadians(double degrees) {
+    return degrees * pi / 180;
   }
 
   Future<void> _getUpdatedUserInfo() async {
@@ -190,24 +242,18 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   }
 
   Future<void> findUserLevel(BuildContext context) async {
-    String url = 'http://10.0.2.2:8080/user/$userId/level';
+    String url = 'http://${dotenv.env['SERVER_IP']}:${dotenv.env['SERVER_PORT']}/user/$userId/level';
 
     try {
       final response = await http.get(
         Uri.parse(url),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
-          // 'Authorization': token,
         },
       );
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
-
-        print(data['userUid']);
-        print(data['level']);
-        print(data['currentPurchaseCount']);
-        print(data['needPurchaseCount']);
 
         setState(() {
           userUid = data['userUid'];
@@ -224,14 +270,13 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   }
 
   Future<void> findUserSavingCose(BuildContext context) async {
-    String url = 'http://10.0.2.2:8080/user/$userId/saving';
+    String url = 'http://${dotenv.env['SERVER_IP']}:${dotenv.env['SERVER_PORT']}/user/$userId/saving';
 
     try {
       final response = await http.get(
         Uri.parse(url),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
-          // 'Authorization': token,
         },
       );
 
@@ -314,6 +359,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   void _onSortOptionChanged(String? newValue) {
     setState(() {
       _selectedSortOption = newValue!;
+      _sortPosts();  // 선택된 정렬 옵션에 따라 게시물 정렬
     });
   }
 
@@ -568,8 +614,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                     children: [
                       CircleAvatar(
                         radius: 20,
-                        backgroundImage: NetworkImage(
-                            "https://example.com/profile_image.jpg"), // Placeholder for profile image
+                        backgroundColor: Colors.grey.shade300, // 아이콘의 배경색 지정
+                        child: Icon(Icons.person, size: 20, color: Colors.white), // 기본 아이콘 설정
                       ),
                       SizedBox(width: 10),
                       Expanded(
@@ -577,7 +623,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              post['username'],
+                              post['userNickname'],
                               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                             ),
                           ],
@@ -619,7 +665,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                     borderRadius: BorderRadius.circular(8), // 모서리를 더 둥글게 처리
                                   ),
                                   child: Text(
-                                    '모구가',
+                                    post['category'],
                                     style: TextStyle(
                                       fontSize: 16, // 글자 크기를 더 키움
                                       color: Color(0xFFB34FD1),
@@ -629,7 +675,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                 ),
                                 SizedBox(width: 8),
                                 Text(
-                                  post['price'],
+                                  '${post['pricePerCount']}원',
                                   style: TextStyle(
                                     fontSize: 18,
                                     color: Color(0xFFB34FD1),
@@ -713,7 +759,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                           ),
                           SizedBox(width: 4),
                           Text(
-                            '12/32',
+                            post['purchaseDate'],
                             style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey),
                           ),
                         ],

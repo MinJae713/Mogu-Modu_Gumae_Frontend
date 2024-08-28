@@ -105,8 +105,6 @@ class _PostCreatePageState extends State<PostCreatePage> {
         var streamedResponse = await request.send();
         var response = await http.Response.fromStream(streamedResponse);
         if (response.statusCode == 201) {
-          // final responseData = jsonDecode(response.body);
-
           await _showSuccessDialog('성공', '게시글을 성공적으로 등록했습니다.').then((_) {
             Navigator.pop(context, true);
           });
@@ -160,7 +158,7 @@ class _PostCreatePageState extends State<PostCreatePage> {
       isLocationValid = meetingPlace.isNotEmpty;
       isDiscountValid = originalPrice > discountPrice;
       showDiscountError = originalPrice > 0 && discountPrice > 0 && !isDiscountValid;
-      showCustomPriceError = !isShareConditionEqual && !isCustomPriceValid; // 커스텀 가격 오류 메시지를 등록할 때만 표시
+      showCustomPriceError = !isShareConditionEqual && !isCustomPriceValid;
     });
 
     return isTitleValid &&
@@ -427,7 +425,7 @@ class _PostCreatePageState extends State<PostCreatePage> {
         meetingPlace = selectedAddress;
         meetingPlaceRoadName = selectedAddress;
         selectedLocation = location;
-        isLocationValid = true; // 위치가 선택되었으므로 유효성 검사를 통과
+        isLocationValid = true;
       });
     }
   }
@@ -435,7 +433,7 @@ class _PostCreatePageState extends State<PostCreatePage> {
   void _toggleShareCondition(bool isEqual) {
     setState(() {
       isShareConditionEqual = isEqual;
-      showCustomPriceError = false; // 상태 변경 시 오류 메시지를 숨김
+      showCustomPriceError = false;
       _calculateDiscount();
     });
   }
@@ -624,7 +622,7 @@ class _PostCreatePageState extends State<PostCreatePage> {
             if (!isPriceValid)
               Row(
                 children: [
-                  Expanded(child: Container()), // To push the error text to the right
+                  Expanded(child: Container()),
                   Text(
                     "가격을 입력하세요",
                     style: TextStyle(color: Colors.red, fontSize: 12),
@@ -635,7 +633,7 @@ class _PostCreatePageState extends State<PostCreatePage> {
             if (!isPersonValid)
               Row(
                 children: [
-                  Expanded(child: Container()), // To push the error text to the right
+                  Expanded(child: Container()),
                   Text(
                     "인원을 입력하세요",
                     style: TextStyle(color: Colors.red, fontSize: 12),
@@ -648,7 +646,7 @@ class _PostCreatePageState extends State<PostCreatePage> {
             if (!isCustomPriceValid && showCustomPriceError)
               Row(
                 children: [
-                  Expanded(child: Container()), // To push the error text to the right
+                  Expanded(child: Container()),
                   Text(
                     "인당 가격을 입력하세요",
                     style: TextStyle(color: Colors.red, fontSize: 12),
@@ -659,7 +657,7 @@ class _PostCreatePageState extends State<PostCreatePage> {
             if (showDiscountError)
               Row(
                 children: [
-                  Expanded(child: Container()), // To push the error text to the right
+                  Expanded(child: Container()),
                   Text(
                     "할인된 가격은 상품 구매 가격보다 낮아야 합니다",
                     style: TextStyle(color: Colors.red, fontSize: 12),
@@ -670,7 +668,7 @@ class _PostCreatePageState extends State<PostCreatePage> {
             if (!isLocationValid)
               Row(
                 children: [
-                  Expanded(child: Container()), // To push the error text to the right
+                  Expanded(child: Container()),
                   Text(
                     "모임 장소를 설정하세요",
                     style: TextStyle(color: Colors.red, fontSize: 12),
@@ -684,7 +682,7 @@ class _PostCreatePageState extends State<PostCreatePage> {
       bottomNavigationBar: Material(
         color: Colors.white,
         child: InkWell(
-          onTap: () => _submitPost(context), // 여기에 context를 전달
+          onTap: () => _submitPost(context),
           child: Container(
             width: double.infinity,
             height: 70,
@@ -709,7 +707,7 @@ class _PostCreatePageState extends State<PostCreatePage> {
                     borderRadius: BorderRadius.circular(10),
                     child: InkWell(
                       borderRadius: BorderRadius.circular(10),
-                      onTap: () => _submitPost(context), // 여기에 context를 전달
+                      onTap: () => _submitPost(context),
                       child: Container(
                         height: double.infinity,
                         padding: const EdgeInsets.all(10),
@@ -764,15 +762,15 @@ class _PostCreatePageState extends State<PostCreatePage> {
                 if (title == '모임 장소')
                   SizedBox(width: 4),
                 Container(
-                  constraints: BoxConstraints(maxWidth: 200), // 텍스트 최대 너비를 설정하여 오버플로우 방지
+                  constraints: BoxConstraints(maxWidth: 200),
                   child: Text(
                     value,
                     style: TextStyle(
                       fontSize: 16,
                       color: Color(0xFFB34FD1),
                     ),
-                    overflow: TextOverflow.ellipsis, // 텍스트가 너무 길 경우 줄임표(...) 추가
-                    maxLines: 1, // 한 줄로 제한
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
                 ),
                 if (icon != null && title != '모임 장소')

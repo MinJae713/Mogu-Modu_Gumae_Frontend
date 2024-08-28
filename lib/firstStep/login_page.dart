@@ -100,7 +100,9 @@ class _LoginPageState extends State<LoginPage> {
       );
 
       if (response.statusCode == 200) {
-        return jsonDecode(response.body);
+        // 응답 데이터의 body를 UTF-8로 디코딩
+        String decodedBody = utf8.decode(response.bodyBytes);
+        return jsonDecode(decodedBody);
       } else {
         print('Failed to load user info. Status code: ${response.statusCode}');
         return null;
