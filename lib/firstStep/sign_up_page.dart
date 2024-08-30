@@ -34,6 +34,15 @@ class _SignUpPageState extends State<SignUpPage> {
 
   final LocationService _locationService = LocationService(); // LocationService 인스턴스 생성
 
+  // FocusNodes 추가
+  final FocusNode _userIdFocusNode = FocusNode();
+  final FocusNode _passwordFocusNode = FocusNode();
+  final FocusNode _confirmPasswordFocusNode = FocusNode();
+  final FocusNode _nameFocusNode = FocusNode();
+  final FocusNode _nicknameFocusNode = FocusNode();
+  final FocusNode _phoneFocusNode = FocusNode();
+  final FocusNode _addressFocusNode = FocusNode();
+
   @override
   void initState() {
     super.initState();
@@ -232,13 +241,23 @@ class _SignUpPageState extends State<SignUpPage> {
                   _buildVerificationCodeField(),
                 ],
                 SizedBox(height: 16),
-                _buildPasswordField(), // 비밀번호 입력 필드
+                _buildPasswordField(),
                 SizedBox(height: 16),
-                _buildConfirmPasswordField(), // 비밀번호 확인 필드 추가
+                _buildConfirmPasswordField(),
                 SizedBox(height: 16),
-                _buildTextFieldWithLabel("이름", true, "이름을 입력하세요", nameController),
+                _buildTextFieldWithLabel("이름", true, "이름을 입력하세요", nameController,
+                  focusNode: _nameFocusNode,
+                  onFieldSubmitted: (value) {
+                    FocusScope.of(context).requestFocus(_nicknameFocusNode);
+                  },
+                ),
                 SizedBox(height: 16),
-                _buildTextFieldWithLabel("닉네임", true, "닉네임을 입력하세요", nicknameController),
+                _buildTextFieldWithLabel("닉네임", true, "닉네임을 입력하세요", nicknameController,
+                  focusNode: _nicknameFocusNode,
+                  onFieldSubmitted: (value) {
+                    FocusScope.of(context).requestFocus(_phoneFocusNode);
+                  },
+                ),
                 SizedBox(height: 16),
                 _buildPhoneNumberField(),
                 if (isPhoneVerificationFieldVisible) ...[
@@ -285,7 +304,12 @@ class _SignUpPageState extends State<SignUpPage> {
       children: [
         Expanded(
           child: _buildTextFieldWithLabel(
-              "아이디 (이메일주소)", true, "이메일을 입력하세요", userIdController),
+            "아이디 (이메일주소)", true, "이메일을 입력하세요", userIdController,
+            focusNode: _userIdFocusNode,
+            onFieldSubmitted: (value) {
+              FocusScope.of(context).requestFocus(_passwordFocusNode);
+            },
+          ),
         ),
         SizedBox(width: 8),
         ElevatedButton(
@@ -337,6 +361,10 @@ class _SignUpPageState extends State<SignUpPage> {
       "패스워드를 입력하세요",
       passwordController,
       obscureText: true,
+      focusNode: _passwordFocusNode,
+      onFieldSubmitted: (value) {
+        FocusScope.of(context).requestFocus(_confirmPasswordFocusNode);
+      },
       validator: (value) {
         if (value == null || value.isEmpty) {
           return '패스워드를 입력해주세요';
@@ -363,6 +391,10 @@ class _SignUpPageState extends State<SignUpPage> {
       "패스워드를 다시 입력하세요",
       confirmPasswordController,
       obscureText: true,
+      focusNode: _confirmPasswordFocusNode,
+      onFieldSubmitted: (value) {
+        FocusScope.of(context).requestFocus(_nameFocusNode);
+      },
       validator: (value) {
         if (value == null || value.isEmpty) {
           return '패스워드 확인을 입력해주세요';
@@ -390,6 +422,10 @@ class _SignUpPageState extends State<SignUpPage> {
               LengthLimitingTextInputFormatter(11),
               PhoneNumberFormatter(),
             ],
+            focusNode: _phoneFocusNode,
+            onFieldSubmitted: (value) {
+              FocusScope.of(context).requestFocus(_addressFocusNode);
+            },
           ),
         ),
         SizedBox(width: 8),
@@ -445,6 +481,7 @@ class _SignUpPageState extends State<SignUpPage> {
         icon: Icon(Icons.location_on, color: Color(0xFFB34FD1)),
         onPressed: _onLocationIconPressed,
       ),
+      focusNode: _addressFocusNode,
       readOnly: true,
     );
   }
@@ -459,6 +496,8 @@ class _SignUpPageState extends State<SignUpPage> {
         Widget? suffixIcon,
         bool readOnly = false,
         bool obscureText = false,
+        FocusNode? focusNode,
+        Function(String)? onFieldSubmitted,
         String? Function(String?)? validator,
       }) {
     return Column(
@@ -491,6 +530,8 @@ class _SignUpPageState extends State<SignUpPage> {
           keyboardType: keyboardType,
           inputFormatters: inputFormatters,
           obscureText: obscureText,
+          focusNode: focusNode,
+          onFieldSubmitted: onFieldSubmitted,
           decoration: InputDecoration(
             hintText: hintText,
             hintStyle: TextStyle(color: Colors.grey),

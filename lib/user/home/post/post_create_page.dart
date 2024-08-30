@@ -49,6 +49,12 @@ class _PostCreatePageState extends State<PostCreatePage> {
   final LocationService _locationService = LocationService();
   NLatLng? selectedLocation;
 
+  // FocusNodes 추가
+  final FocusNode _titleFocusNode = FocusNode();
+  final FocusNode _contentFocusNode = FocusNode();
+  final FocusNode _priceFocusNode = FocusNode();
+  final FocusNode _personFocusNode = FocusNode();
+
   @override
   void initState() {
     super.initState();
@@ -528,6 +534,10 @@ class _PostCreatePageState extends State<PostCreatePage> {
                 SizedBox(height: 8),
                 TextFormField(
                   controller: titleController,
+                  focusNode: _titleFocusNode,
+                  onFieldSubmitted: (value) {
+                    FocusScope.of(context).requestFocus(_contentFocusNode);
+                  },
                   decoration: InputDecoration(
                     border: OutlineInputBorder(),
                     errorText: isTitleValid ? null : "제목을 입력하세요",
@@ -553,6 +563,7 @@ class _PostCreatePageState extends State<PostCreatePage> {
                 SizedBox(height: 8),
                 TextFormField(
                   controller: contentController,
+                  focusNode: _contentFocusNode,
                   maxLines: 3,
                   decoration: InputDecoration(
                     border: OutlineInputBorder(),
@@ -800,6 +811,10 @@ class _PostCreatePageState extends State<PostCreatePage> {
             width: 150,
             child: TextFormField(
               controller: controller,
+              focusNode: _priceFocusNode,
+              onFieldSubmitted: (value) {
+                FocusScope.of(context).requestFocus(_personFocusNode);
+              },
               keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               decoration: InputDecoration(
@@ -835,6 +850,7 @@ class _PostCreatePageState extends State<PostCreatePage> {
             width: 150,
             child: TextFormField(
               controller: controller,
+              focusNode: _personFocusNode,
               keyboardType: TextInputType.number,
               inputFormatters: [
                 FilteringTextInputFormatter.digitsOnly,

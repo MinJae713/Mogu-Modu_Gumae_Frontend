@@ -17,6 +17,10 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
+  // FocusNode 추가
+  final FocusNode _usernameFocusNode = FocusNode();
+  final FocusNode _passwordFocusNode = FocusNode();
+
   final _formKey = GlobalKey<FormState>();
 
   Future<void> login(BuildContext context) async {
@@ -223,6 +227,11 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                           child: TextFormField(
                             controller: usernameController,
+                            focusNode: _usernameFocusNode, // FocusNode 할당
+                            onFieldSubmitted: (value) {
+                              // 엔터 누르면 패스워드 입력란으로 포커스 이동
+                              FocusScope.of(context).requestFocus(_passwordFocusNode);
+                            },
                             style: TextStyle(
                               fontSize: 20,
                               color: Colors.black,
@@ -258,6 +267,7 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                           child: TextFormField(
                             controller: passwordController,
+                            focusNode: _passwordFocusNode, // FocusNode 할당
                             obscureText: true,
                             style: TextStyle(
                               fontSize: 20,
