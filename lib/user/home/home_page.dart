@@ -402,9 +402,9 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                   Text('나와의 거리'),
                   Slider(
                     value: _currentDistanceValue,
-                    min: 0,
-                    max: 10,
-                    divisions: 10,
+                    min: 0.5,  // 500미터를 기본값으로 설정
+                    max: 3,    // 최대 거리를 3km로 설정
+                    divisions: 5,  // 500미터 단위로 슬라이더 구분
                     label: '${_currentDistanceValue.toStringAsFixed(1)} km',
                     onChanged: (value) {
                       setModalState(() {
@@ -415,7 +415,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                     inactiveColor: Colors.grey,
                   ),
                   Text(
-                    '~ ${_currentDistanceValue.toStringAsFixed(1)}km',
+                    '~ ${_currentDistanceValue.toStringAsFixed(1)} km',
                     style: TextStyle(color: Colors.grey),
                   ),
                   SizedBox(height: 16),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mogu_app/firstStep/termsand_policy_page.dart';
 import 'login_page.dart';
+import 'social_login_page.dart'; // 추가
 
 class FirstPage extends StatelessWidget {
   const FirstPage({super.key});
@@ -38,7 +39,28 @@ class FirstPage extends StatelessWidget {
                           width: screenWidth * 0.9,
                           child: Column(
                             children: [
-                              _buildButton('구글로 로그인', () {}),
+                              _buildButton('구글로 로그인', () {
+                                Navigator.push(
+                                  context,
+                                  PageRouteBuilder(
+                                    pageBuilder: (context, animation, secondaryAnimation) =>
+                                        SocialLoginPage(), // SocialLoginPage로 이동
+                                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                      const begin = Offset(1.0, 0.0); // 오른쪽에서 시작
+                                      const end = Offset.zero;
+                                      const curve = Curves.ease;
+
+                                      var tween = Tween(begin: begin, end: end)
+                                          .chain(CurveTween(curve: curve));
+
+                                      return SlideTransition(
+                                        position: animation.drive(tween),
+                                        child: child,
+                                      );
+                                    },
+                                  ),
+                                );
+                              }),
                               SizedBox(height: screenHeight * 0.01),
                               _buildButton('이메일로 로그인하기', () {
                                 Navigator.push(
