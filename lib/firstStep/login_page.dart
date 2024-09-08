@@ -68,10 +68,6 @@ class _LoginPageState extends State<LoginPage> {
               _showErrorDialog('오류', '유저 정보를 가져올 수 없습니다.');
             }
           }
-        } else {
-          if (mounted) {
-            _showErrorDialog('로그인 실패', '토큰을 찾을 수 없습니다.');
-          }
         }
       } else {
         print(response.statusCode);
@@ -92,7 +88,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<Map<String, dynamic>?> _getUserInfo(String username, String token) async {
-    String userUrl = 'http://${dotenv.env['SERVER_IP']}:${dotenv.env['SERVER_PORT']}/user/$username';
+    String userUrl = 'http://${dotenv.env['SERVER_IP']}:${dotenv.env['SERVER_PORT']}/user/my';
 
     try {
       final response = await http.get(

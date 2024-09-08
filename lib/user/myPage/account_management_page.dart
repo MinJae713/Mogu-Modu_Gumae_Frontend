@@ -31,12 +31,13 @@ class _AccountManagementPage extends State<AccountManagementPage> {
   }
 
   Future<void> updateUserPassword(BuildContext context, String newPassword) async {
-    String url = 'http://${dotenv.env['SERVER_IP']}:${dotenv.env['SERVER_PORT']}/user/${widget.userInfo['userId']}/password';
+    String url = 'http://${dotenv.env['SERVER_IP']}:${dotenv.env['SERVER_PORT']}/user/password';
 
     try {
       final response = await http.patch(
         Uri.parse(url),
         headers: <String, String>{
+          'Authorization': widget.userInfo['token'],
           'Content-Type': 'application/json; charset=UTF-8',
         },
         body: jsonEncode(<String, String>{
@@ -47,7 +48,8 @@ class _AccountManagementPage extends State<AccountManagementPage> {
       if (response.statusCode == 200) {
         _showSuccessDialog('성공', '비밀번호 변경에 성공하였습니다.');
       } else {
-        _showErrorDialog('실패', '서버에서 오류가 발생했습니다.');
+        String decodedBody = utf8.decode(response.bodyBytes);
+        _showErrorDialog('실패', decodedBody.substring(2, decodedBody.length - 2));
       }
     } catch (e) {
       _showErrorDialog('오류', '서버와의 연결 오류가 발생했습니다.');
@@ -55,12 +57,13 @@ class _AccountManagementPage extends State<AccountManagementPage> {
   }
 
   Future<void> deleteUser(BuildContext context) async {
-    String url = 'http://${dotenv.env['SERVER_IP']}:${dotenv.env['SERVER_PORT']}/user/${widget.userInfo['userId']}';
+    String url = 'http://${dotenv.env['SERVER_IP']}:${dotenv.env['SERVER_PORT']}/user/my';
 
     try {
       final response = await http.delete(
         Uri.parse(url),
         headers: <String, String>{
+          'Authorization': widget.userInfo['token'],
           'Content-Type': 'application/json; charset=UTF-8',
         },
       );
@@ -68,7 +71,8 @@ class _AccountManagementPage extends State<AccountManagementPage> {
       if (response.statusCode == 204) {
         _showSuccessDialog('성공', '회원탈퇴에 성공하였습니다.');
       } else {
-        _showErrorDialog('실패', '서버에서 오류가 발생했습니다.');
+        String decodedBody = utf8.decode(response.bodyBytes);
+        _showErrorDialog('실패', decodedBody.substring(2, decodedBody.length - 2));
       }
     } catch (e) {
       _showErrorDialog('오류', '서버와의 연결 오류가 발생했습니다.');

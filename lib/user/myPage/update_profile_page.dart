@@ -86,8 +86,11 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
       return;
     }
 
-    String url = 'http://${dotenv.env['SERVER_IP']}:${dotenv.env['SERVER_PORT']}/user/${widget.userId}';
+    String url = 'http://${dotenv.env['SERVER_IP']}:${dotenv.env['SERVER_PORT']}/user';
     var request = http.MultipartRequest('PATCH', Uri.parse(url));
+
+    // Authorization 헤더에 토큰 추가
+    request.headers['Authorization'] = widget.token;
 
     // JSON 데이터를 문자열로 변환하여 필드로 추가하고, Content-Type을 application/json으로 설정
     request.fields['request'] = jsonEncode({

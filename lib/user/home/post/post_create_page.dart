@@ -75,8 +75,10 @@ class _PostCreatePageState extends State<PostCreatePage> {
 
   Future<void> _submitPost(BuildContext context) async {
     if (_validateInputs()) {
-      String url = 'http://${dotenv.env['SERVER_IP']}:${dotenv.env['SERVER_PORT']}/post/${widget.userInfo['userId']}';
+      String url = 'http://${dotenv.env['SERVER_IP']}:${dotenv.env['SERVER_PORT']}/post';
       var request = http.MultipartRequest('POST', Uri.parse(url));
+
+      request.headers['Authorization'] = widget.userInfo['token'];
 
       request.fields['request'] = jsonEncode({
         "title": titleController.text,
@@ -115,9 +117,8 @@ class _PostCreatePageState extends State<PostCreatePage> {
             Navigator.pop(context, true);
           });
         } else {
-          print(response.body);
-          print('Failed with status code: ${response.statusCode}');
-          _showErrorDialog('등록 실패', '서버에서 오류가 발생했습니다.');
+          String decodedBody = utf8.decode(response.bodyBytes);
+          _showErrorDialog('등록 실패', decodedBody.substring(2, decodedBody.length - 2));
         }
       } catch (e) {
         print('Exception: $e');

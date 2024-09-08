@@ -98,10 +98,16 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   }
 
   Future<void> _findAllPost(BuildContext context) async {
-    String url = 'http://${dotenv.env['SERVER_IP']}:${dotenv.env['SERVER_PORT']}/post/all/${widget.userInfo['userId']}';
+    String url = 'http://${dotenv.env['SERVER_IP']}:${dotenv.env['SERVER_PORT']}/post/all';
 
     try {
-      final response = await http.get(Uri.parse(url));
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+        'Authorization': token, // 토큰을 헤더에 추가
+        'Content-Type': 'application/json', // 필요한 경우 헤더에 Content-Type도 추가
+      });
+
 
       if (response.statusCode == 200) {
         // 응답 데이터의 body를 UTF-8로 디코딩
@@ -202,12 +208,13 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   }
 
   Future<Map<String, dynamic>?> fetchUpdatedUserInfo(String userId, String token) async {
-    String url = 'http://${dotenv.env['SERVER_IP']}:${dotenv.env['SERVER_PORT']}/user/$userId';
+    String url = 'http://${dotenv.env['SERVER_IP']}:${dotenv.env['SERVER_PORT']}/user/my';
 
     try {
       final response = await http.get(
         Uri.parse(url),
         headers: {
+          'Authorization': token,
           'Content-Type': 'application/json; charset=UTF-8',
         },
       );
@@ -242,12 +249,13 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   }
 
   Future<void> findUserLevel(BuildContext context) async {
-    String url = 'http://${dotenv.env['SERVER_IP']}:${dotenv.env['SERVER_PORT']}/user/$userId/level';
+    String url = 'http://${dotenv.env['SERVER_IP']}:${dotenv.env['SERVER_PORT']}/user/level';
 
     try {
       final response = await http.get(
         Uri.parse(url),
         headers: <String, String>{
+          'Authorization': token,
           'Content-Type': 'application/json; charset=UTF-8',
         },
       );
@@ -270,12 +278,13 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   }
 
   Future<void> findUserSavingCose(BuildContext context) async {
-    String url = 'http://${dotenv.env['SERVER_IP']}:${dotenv.env['SERVER_PORT']}/user/$userId/saving';
+    String url = 'http://${dotenv.env['SERVER_IP']}:${dotenv.env['SERVER_PORT']}/user/saving';
 
     try {
       final response = await http.get(
         Uri.parse(url),
         headers: <String, String>{
+          'Authorization': token,
           'Content-Type': 'application/json; charset=UTF-8',
         },
       );
