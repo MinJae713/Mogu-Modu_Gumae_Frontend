@@ -113,7 +113,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         // 응답 데이터의 body를 UTF-8로 디코딩
         String decodedBody = utf8.decode(response.bodyBytes);
         List<dynamic> responseData = jsonDecode(decodedBody);
-        print(responseData);
 
         setState(() {
           posts.clear(); // 기존 게시글 리스트 초기화
@@ -169,13 +168,10 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           // 정렬 옵션에 따라 게시글 리스트를 정렬
           _sortPosts();
         });
-        // print(posts);
       } else {
-        print('Failed with status code: ${response.statusCode}');
         _showErrorDialog('불러오기 실패', '서버에서 오류가 발생했습니다.');
       }
     } catch (e) {
-      print('Exception: $e');
       _showErrorDialog('오류', '서버와의 연결 오류가 발생했습니다. 다시 시도해주세요.');
     }
   }
@@ -197,10 +193,9 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     double dLat = _degreesToRadians(lat2 - lat1);
     double dLon = _degreesToRadians(lon2 - lon1);
 
-    double a =
-        sin(dLat / 2) * sin(dLat / 2) +
-            cos(_degreesToRadians(lat1)) * cos(_degreesToRadians(lat2)) *
-                sin(dLon / 2) * sin(dLon / 2);
+    double a = sin(dLat / 2) * sin(dLat / 2) +
+        cos(_degreesToRadians(lat1)) * cos(_degreesToRadians(lat2)) *
+            sin(dLon / 2) * sin(dLon / 2);
 
     double c = 2 * atan2(sqrt(a), sqrt(1 - a));
 
@@ -220,7 +215,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         longitude = updatedUserInfo['longitude']?.toDouble() ?? longitude;
         latitude = updatedUserInfo['latitude']?.toDouble() ?? latitude;
       });
-      // 주소를 업데이트된 경도와 위도를 통해 가져오기
       await _getAddress();
     } else {
       _showErrorDialog('오류', '사용자 정보를 불러올 수 없습니다.');
@@ -264,7 +258,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       setState(() {
         address = "주소를 가져올 수 없습니다.";
       });
-      print('주소를 가져오는 중 오류 발생: $e');
     }
   }
 
@@ -612,7 +605,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             Navigator.push(
               context,
               PageRouteBuilder(
-                pageBuilder: (context, animation, secondaryAnimation) => PostDetailPage(),
+                pageBuilder: (context, animation, secondaryAnimation) => PostDetailPage(post: post),
                 transitionsBuilder: (context, animation, secondaryAnimation, child) {
                   const begin = Offset(1.0, 0.0);
                   const end = Offset.zero;
@@ -833,13 +826,13 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     );
   }
 
-  Widget _buildMoguHistoryCard() {
+  Widget _buildMoguHistoryCard(Map<String, dynamic> post) {
     return InkWell(
       onTap: () {
         Navigator.push(
           context,
           PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => PostDetailPage(),
+            pageBuilder: (context, animation, secondaryAnimation) => PostDetailPage(post: post),
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
               const begin = Offset(1.0, 0.0);
               const end = Offset.zero;
@@ -860,7 +853,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
+            children: [
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -870,14 +863,14 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('명지대사거리 우리은행 앞'),
+                        Text(post['address'] ?? '주소 정보 없음'),
                         Text(
-                          '방금 구매한 계란 5개씩 나누실 분...',
+                          post['title'] ?? '제목 없음',
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                         SizedBox(height: 8),
-                        Text('모구가 : 2000원'),
-                        Text('참여 인원 2/3\n모구 마감 12/32'),
+                        Text('모구가 : ${post['pricePerCount']}원'),
+                        Text('참여 인원 ${post['currentUserCount']}/${post['userCount']}\n모구 마감 ${post['purchaseDate']}'),
                       ],
                     ),
                   ),
@@ -898,13 +891,13 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     );
   }
 
-  Widget _buildMyMoguCard() {
+  Widget _buildMyMoguCard(Map<String, dynamic> post) {
     return InkWell(
       onTap: () {
         Navigator.push(
           context,
           PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => PostDetailPage(),
+            pageBuilder: (context, animation, secondaryAnimation) => PostDetailPage(post: post),
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
               const begin = Offset(1.0, 0.0);
               const end = Offset.zero;
@@ -925,7 +918,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           padding: const EdgeInsets.all(16.0),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
+            children: [
               Icon(Icons.image, size: 60, color: Colors.grey),
               SizedBox(width: 16),
               Expanded(
@@ -933,20 +926,20 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '방금 구매한 계란 5개씩 나누실 분...',
+                      post['title'] ?? '제목 없음',
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 8),
-                    Text('모구가 : 2000원'),
-                    Text('모구 마감: 2024/12/32'),
+                    Text('모구가 : ${post['pricePerCount']}원'),
+                    Text('모구 마감: ${post['purchaseDate']}'),
                     SizedBox(height: 8),
                     Row(
                       children: [
-                        Text('2/3'),
+                        Text('${post['currentUserCount']}/${post['userCount']}'),
                         SizedBox(width: 8),
                         Stack(
                           clipBehavior: Clip.none,
-                          children: [
+                          children: const [
                             CircleAvatar(
                               radius: 12,
                               backgroundColor: Colors.grey,
@@ -1075,18 +1068,18 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             children: [
               Expanded(
                 child: ListView.builder(
-                  itemCount: 5,
+                  itemCount: posts.length,
                   itemBuilder: (context, index) {
-                    return _buildMoguHistoryCard();
+                    return _buildMoguHistoryCard(posts[index]);
                   },
                 ),
               ),
             ],
           ),
           ListView.builder(
-            itemCount: 5,
+            itemCount: posts.length,
             itemBuilder: (context, index) {
-              return _buildMyMoguCard();
+              return _buildMyMoguCard(posts[index]);
             },
           ),
         ],
@@ -1394,18 +1387,18 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             children: [
               Expanded(
                 child: ListView.builder(
-                  itemCount: 5,
+                  itemCount: posts.length,
                   itemBuilder: (context, index) {
-                    return _buildMoguHistoryCard();
+                    return _buildMoguHistoryCard(posts[index]);
                   },
                 ),
               ),
             ],
           ),
           ListView.builder(
-            itemCount: 5,
+            itemCount: posts.length,
             itemBuilder: (context, index) {
-              return _buildMyMoguCard();
+              return _buildMyMoguCard(posts[index]);
             },
           ),
         ],
@@ -1511,7 +1504,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
               );
 
               if (result == true) {
-                // 포스트 생성 후 홈 화면에서 새로고침
                 await _findAllPost(context);
               }
             },

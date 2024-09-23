@@ -43,26 +43,27 @@ class PostAskReviewPage extends StatelessWidget {
       borderRadius: BorderRadius.circular(10), // 오브젝트의 둥근 모서리
       child: InkWell(
         onTap: () {
-          Navigator.push(
-            context,
-            PageRouteBuilder(
-              pageBuilder: (context, animation, secondaryAnimation) =>
-                  PostDetailPage(),
-              transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                const begin = Offset(1.0, 0.0); // 오른쪽에서 시작
-                const end = Offset.zero;
-                const curve = Curves.ease;
-
-                var tween = Tween(begin: begin, end: end)
-                    .chain(CurveTween(curve: curve));
-
-                return SlideTransition(
-                  position: animation.drive(tween),
-                  child: child,
-                );
-              },
-            ),
-          );
+          //todo:포스트 디테일에 포스트 정보 주기
+          // Navigator.push(
+          //   context,
+          //   PageRouteBuilder(
+          //     pageBuilder: (context, animation, secondaryAnimation) =>
+          //         PostDetailPage(),
+          //     transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          //       const begin = Offset(1.0, 0.0); // 오른쪽에서 시작
+          //       const end = Offset.zero;
+          //       const curve = Curves.ease;
+          //
+          //       var tween = Tween(begin: begin, end: end)
+          //           .chain(CurveTween(curve: curve));
+          //
+          //       return SlideTransition(
+          //         position: animation.drive(tween),
+          //         child: child,
+          //       );
+          //     },
+          //   ),
+          // );
         },
         borderRadius: BorderRadius.circular(10), // 물결 효과의 경계 설정
         splashColor: Colors.purple.withOpacity(0.3), // 물결 효과 색상 보라색으로 설정

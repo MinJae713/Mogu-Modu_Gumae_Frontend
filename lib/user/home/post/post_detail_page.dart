@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:mogu_app/user/home/post/report/post_report_page.dart';
 
 class PostDetailPage extends StatefulWidget {
-  const PostDetailPage({super.key});
+  final Map<String, dynamic> post; // 포스트 데이터를 받을 수 있도록 생성자에 추가
+
+  const PostDetailPage({Key? key, required this.post}) : super(key: key);
 
   @override
   _PostDetailPageState createState() => _PostDetailPageState();
@@ -10,8 +12,16 @@ class PostDetailPage extends StatefulWidget {
 
 class _PostDetailPageState extends State<PostDetailPage> {
   bool _isHeartFilled = false; // 하트 아이콘의 상태를 저장하는 변수
-  int _likeCount = 7; // 좋아요 수 초기값
-  int _viewCount = 23; // 조회수
+  late int _likeCount; // 좋아요 수를 저장하는 변수
+  late int _viewCount; // 조회수를 저장하는 변수
+
+  @override
+  void initState() {
+    super.initState();
+    // widget.post 데이터를 이용하여 초기 좋아요 및 조회수 값을 설정
+    _likeCount = widget.post['heartCount'] ?? 0;
+    _viewCount = widget.post['viewCount'] ?? 0;
+  }
 
   void _toggleHeart() {
     setState(() {
@@ -101,14 +111,21 @@ class _PostDetailPageState extends State<PostDetailPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 임시 아이콘 대신 사용하는 이미지
+            // 이미지 섹션
             Stack(
               children: [
                 Container(
                   color: Colors.grey.shade300,
                   width: double.infinity,
                   height: 200,
-                  child: Icon(
+                  child: widget.post['thumbnail'] != null && widget.post['thumbnail'].isNotEmpty
+                      ? Image.network(
+                    widget.post['thumbnail'],
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: 200,
+                  )
+                      : Icon(
                     Icons.image,
                     size: 100,
                     color: Colors.grey,
@@ -149,18 +166,18 @@ class _PostDetailPageState extends State<PostDetailPage> {
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
+                children: [
                   // 제목 및 거리 정보
                   Row(
                     children: [
                       Expanded(
                         child: Text(
-                          '방금 구매한 계란 5개씩 나누실 분...',
+                          widget.post['title'] ?? '제목 없음',
                           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                       ),
                       SizedBox(width: 8),
-                      Text('1~2km', style: TextStyle(color: Colors.grey)),
+                      Text('${widget.post['distance']}km', style: TextStyle(color: Colors.grey)),
                     ],
                   ),
                   SizedBox(height: 8),
@@ -172,17 +189,17 @@ class _PostDetailPageState extends State<PostDetailPage> {
                         child: Icon(Icons.person, color: Colors.white),
                       ),
                       SizedBox(width: 8),
-                      Text('김찬', style: TextStyle(fontWeight: FontWeight.bold)),
+                      Text(widget.post['userNickname'] ?? '알 수 없음', style: TextStyle(fontWeight: FontWeight.bold)),
                       Spacer(),
                       Icon(Icons.location_on, color: Colors.purple),
                       SizedBox(width: 4),
-                      Text('명지대사거리 우리은행 앞', style: TextStyle(color: Colors.grey)),
+                      Text(widget.post['address'] ?? '주소를 불러오는 중...', style: TextStyle(color: Colors.grey)),
                     ],
                   ),
                   SizedBox(height: 16),
                   // 설명
                   Text(
-                    '내용내용내용내용내용내용내용내용내용내용내용\n내용내용내용내용내용내용내용내용내용내용내용\n내용내용내용내용내용내용내용내용내용내용내용',
+                    widget.post['description'] ?? '내용 없음',
                     style: TextStyle(fontSize: 14),
                   ),
                   SizedBox(height: 16),
@@ -192,7 +209,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text('마감 기한'),
-                      Text('2024/00/00'),
+                      Text(widget.post['endDate'] ?? '알 수 없음'),
                     ],
                   ),
                   SizedBox(height: 8),
@@ -202,7 +219,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
                       Text('모구 인원'),
                       Row(
                         children: [
-                          Text('2/3'),
+                          Text('${widget.post['currentUserCount']}/${widget.post['userCount']}'),
                           SizedBox(width: 8),
                           CircleAvatar(
                             radius: 10,
@@ -226,7 +243,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text('상품 구매 가격'),
-                      Text('00000원', style: TextStyle(fontWeight: FontWeight.bold)),
+                      Text('${widget.post['originalPrice']}원', style: TextStyle(fontWeight: FontWeight.bold)),
                     ],
                   ),
                   SizedBox(height: 8),
@@ -234,7 +251,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text('할인 가격'),
-                      Text('0원', style: TextStyle(fontWeight: FontWeight.bold)),
+                      Text('${widget.post['discountPrice']}원', style: TextStyle(fontWeight: FontWeight.bold)),
                     ],
                   ),
                   SizedBox(height: 8),
@@ -242,7 +259,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text('모구 인원'),
-                      Text('3명', style: TextStyle(fontWeight: FontWeight.bold)),
+                      Text('${widget.post['userCount']}명', style: TextStyle(fontWeight: FontWeight.bold)),
                     ],
                   ),
                   SizedBox(height: 8),
@@ -250,7 +267,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text('모구가 (인당 가격)'),
-                      Text('0000원', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.pink)),
+                      Text('${widget.post['pricePerCount']}원', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.pink)),
                     ],
                   ),
                 ],
