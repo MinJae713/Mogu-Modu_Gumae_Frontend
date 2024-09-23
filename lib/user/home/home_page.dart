@@ -145,7 +145,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
               'recruitState': item['recruitState'] ?? '모집중', // 모집 상태 추가
               'title': item['title'] ?? '제목 없음',
               'userNickname': item['userNickname'] ?? '알 수 없음',
-              'userId': item['userId'] ?? 0, // 사용자 ID 추가
+              'userUid': item['userUid'] ?? 0, // 사용자 ID 추가
               'chiefPrice': item['chiefPrice'] ?? 0, // 주최자 가격 추가
               'originalPrice': item['originalPrice'] ?? 0, // 원래 가격 추가
               'shareCondition': item['shareCondition'] ?? false, // 공유 조건 추가
@@ -605,7 +605,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             Navigator.push(
               context,
               PageRouteBuilder(
-                pageBuilder: (context, animation, secondaryAnimation) => PostDetailPage(post: post),
+                pageBuilder: (context, animation, secondaryAnimation) => PostDetailPage(post: post, userUid: userUid),
                 transitionsBuilder: (context, animation, secondaryAnimation, child) {
                   const begin = Offset(1.0, 0.0);
                   const end = Offset.zero;
@@ -832,7 +832,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         Navigator.push(
           context,
           PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => PostDetailPage(post: post),
+            pageBuilder: (context, animation, secondaryAnimation) => PostDetailPage(post: post, userUid: userUid),
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
               const begin = Offset(1.0, 0.0);
               const end = Offset.zero;
@@ -897,7 +897,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         Navigator.push(
           context,
           PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => PostDetailPage(post: post),
+            pageBuilder: (context, animation, secondaryAnimation) => PostDetailPage(post: post, userUid: userUid),
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
               const begin = Offset(1.0, 0.0);
               const end = Offset.zero;

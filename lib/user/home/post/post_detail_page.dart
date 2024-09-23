@@ -3,8 +3,9 @@ import 'package:mogu_app/user/home/post/report/post_report_page.dart';
 
 class PostDetailPage extends StatefulWidget {
   final Map<String, dynamic> post; // 포스트 데이터를 받을 수 있도록 생성자에 추가
+  final int userUid; // userUid를 추가
 
-  const PostDetailPage({Key? key, required this.post}) : super(key: key);
+  const PostDetailPage({Key? key, required this.post, required this.userUid}) : super(key: key);
 
   @override
   _PostDetailPageState createState() => _PostDetailPageState();
@@ -33,6 +34,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
   void _onParticipateRequest() {
     // 참여요청 버튼 눌렀을 때 동작을 여기에 정의합니다.
     print('참여요청 버튼 눌림');
+    print('User UID: ${widget.userUid}'); // userUid를 출력하여 확인
   }
 
   void _showBottomSheet(BuildContext context) {
