@@ -104,15 +104,16 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       final response = await http.get(
         Uri.parse(url),
         headers: {
-        'Authorization': token, // 토큰을 헤더에 추가
-        'Content-Type': 'application/json', // 필요한 경우 헤더에 Content-Type도 추가
-      });
-
+          'Authorization': token, // 토큰을 헤더에 추가
+          'Content-Type': 'application/json', // 필요한 경우 헤더에 Content-Type도 추가
+        },
+      );
 
       if (response.statusCode == 200) {
         // 응답 데이터의 body를 UTF-8로 디코딩
         String decodedBody = utf8.decode(response.bodyBytes);
         List<dynamic> responseData = jsonDecode(decodedBody);
+        print(responseData);
 
         setState(() {
           posts.clear(); // 기존 게시글 리스트 초기화
@@ -121,35 +122,54 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
               continue; // isHidden이 true이면 해당 아이템을 건너뜁니다.
             }
 
+            double postLatitude = item['latitude']?.toDouble() ?? 0.0;
+            double postLongitude = item['longitude']?.toDouble() ?? 0.0;
+
+            // 주소를 가져옵니다.
+            String postAddress = '주소를 불러오는 중...';
+
+            // 주소를 비동기로 가져옵니다.
+            LocationService().getAddressFromCoordinates(postLatitude, postLongitude).then((address) {
+              setState(() {
+                // 해당 게시물의 주소를 업데이트합니다.
+                int index = posts.indexWhere((p) => p['id'] == item['id']);
+                if (index != -1) {
+                  posts[index]['address'] = address;
+                }
+              });
+            });
+
             posts.add({
-              'id': item['id'] ?? 0,  // ID 추가
-              'category': item['category'] ?? '알 수 없음',  // 카테고리 추가
-              'isHidden': item['isHidden'] ?? false,  // 숨김 상태 추가
-              'recruitState': item['recruitState'] ?? '모집중',  // 모집 상태 추가
+              'id': item['id'] ?? 0, // ID 추가
+              'category': item['category'] ?? '알 수 없음', // 카테고리 추가
+              'isHidden': item['isHidden'] ?? false, // 숨김 상태 추가
+              'recruitState': item['recruitState'] ?? '모집중', // 모집 상태 추가
               'title': item['title'] ?? '제목 없음',
               'userNickname': item['userNickname'] ?? '알 수 없음',
-              'userId': item['userId'] ?? 0,  // 사용자 ID 추가
-              'chiefPrice': item['chiefPrice'] ?? 0,  // 주최자 가격 추가
-              'originalPrice': item['originalPrice'] ?? 0,  // 원래 가격 추가
-              'shareCondition': item['shareCondition'] ?? false,  // 공유 조건 추가
-              'pricePerCount': item['pricePerCount'] ?? 0,  // 인당 가격 추가
-              'participants': item['userCount'] ?? 0,
-              'maxParticipants': item['maxParticipants'] ?? 0,  // 최대 참가자 수 추가
-              'likes': item['heartCount'] ?? 0,
-              'comments': item['viewCount'] ?? 0,
-              'reportCount': item['reportCount'] ?? 0,  // 신고 수 추가
-              'longitude': item['longitude']?.toDouble() ?? 0.0,  // 경도 추가
-              'latitude': item['latitude']?.toDouble() ?? 0.0,  // 위도 추가
-              'imageUrl': item['thumbnail'] ?? '',
-              'postDate': item['postDate'] ?? '',  // 게시일 추가
-              'purchaseDate': item['purchaseDate'] ?? '',  // 구매일 추가
+              'userId': item['userId'] ?? 0, // 사용자 ID 추가
+              'chiefPrice': item['chiefPrice'] ?? 0, // 주최자 가격 추가
+              'originalPrice': item['originalPrice'] ?? 0, // 원래 가격 추가
+              'shareCondition': item['shareCondition'] ?? false, // 공유 조건 추가
+              'pricePerCount': item['pricePerCount'] ?? 0, // 인당 가격 추가
+              'userCount': item['userCount'] ?? 0, // 최대 참가자 수 추가
+              'currentUserCount': item['currentUserCount'] ?? 0,
+              'userProfiles': item['userProfiles'] ?? '',
+              'heartCount': item['heartCount'] ?? 0,
+              'viewCount': item['viewCount'] ?? 0,
+              'reportCount': item['reportCount'] ?? 0, // 신고 수 추가
+              'longitude': postLongitude, // 경도 추가
+              'latitude': postLatitude, // 위도 추가
+              'thumbnail': item['thumbnail'] ?? '', // 게시글 썸네일 URL
+              'postDate': item['postDate'] ?? '', // 게시일 추가
+              'purchaseDate': item['purchaseDate'] ?? '', // 구매일 추가
+              'address': postAddress, // 주소 추가
             });
           }
 
           // 정렬 옵션에 따라 게시글 리스트를 정렬
           _sortPosts();
         });
-        print(posts);
+        // print(posts);
       } else {
         print('Failed with status code: ${response.statusCode}');
         _showErrorDialog('불러오기 실패', '서버에서 오류가 발생했습니다.');
@@ -582,8 +602,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   }
 
   Widget _buildPostCard(Map<String, dynamic> post) {
-    bool isLiked = false; // 초기 상태로 하트를 누르지 않은 상태로 설정
-    int likeCount = post['likes']; // 초기 좋아요 수
+    bool isLiked = false;
+    int heartCount = post['heartCount'];
 
     return StatefulBuilder(
       builder: (context, setState) {
@@ -606,7 +626,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
               ),
             );
           },
-          splashColor: Color(0xFFB34FD1).withOpacity(0.2), // 카드 클릭 시 물결 효과 유지
+          splashColor: Color(0xFFB34FD1).withOpacity(0.2),
           child: Card(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(15.0),
@@ -618,13 +638,17 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // User info and location
                   Row(
                     children: [
                       CircleAvatar(
                         radius: 20,
-                        backgroundColor: Colors.grey.shade300, // 아이콘의 배경색 지정
-                        child: Icon(Icons.person, size: 20, color: Colors.white), // 기본 아이콘 설정
+                        backgroundColor: Colors.grey.shade300,
+                        backgroundImage: (post['userProfiles'] is List && (post['userProfiles'] as List).isNotEmpty)
+                            ? NetworkImage((post['userProfiles'] as List).first)
+                            : null,
+                        child: (post['userProfiles'] is List && (post['userProfiles'] as List).isNotEmpty)
+                            ? null
+                            : Icon(Icons.person, size: 20, color: Colors.white),
                       ),
                       SizedBox(width: 10),
                       Expanded(
@@ -639,11 +663,11 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                         ),
                       ),
                       Row(
-                        children: const [
+                        children: [
                           Icon(Icons.place, color: Color(0xFFB34FD1), size: 16),
                           SizedBox(width: 4),
                           Text(
-                            '명지대사거리 우리은행 앞', // Placeholder location
+                            post['address'] ?? '주소를 불러오는 중...',
                             style: TextStyle(fontSize: 14, color: Colors.grey),
                           ),
                         ],
@@ -651,7 +675,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                     ],
                   ),
                   SizedBox(height: 10),
-                  // Post title and image/icon
                   Row(
                     children: [
                       Expanded(
@@ -668,17 +691,17 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                             Row(
                               children: [
                                 Container(
-                                  padding: EdgeInsets.symmetric(vertical: 4, horizontal: 12), // 패딩을 추가하여 더 강조
+                                  padding: EdgeInsets.symmetric(vertical: 4, horizontal: 12),
                                   decoration: BoxDecoration(
                                     color: Color(0xFFFFD3F0),
-                                    borderRadius: BorderRadius.circular(8), // 모서리를 더 둥글게 처리
+                                    borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(
                                     post['category'],
                                     style: TextStyle(
-                                      fontSize: 16, // 글자 크기를 더 키움
+                                      fontSize: 16,
                                       color: Color(0xFFB34FD1),
-                                      fontWeight: FontWeight.bold, // 글자 굵기 추가
+                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                 ),
@@ -697,11 +720,11 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                         ),
                       ),
                       SizedBox(width: 10),
-                      if (post['imageUrl'] != null && post['imageUrl'].isNotEmpty)
+                      if (post['thumbnail'] != null && post['thumbnail'].isNotEmpty)
                         ClipRRect(
                           borderRadius: BorderRadius.circular(10),
                           child: Image.network(
-                            post['imageUrl'], // Actual image from post data
+                            post['thumbnail'],
                             width: 80,
                             height: 80,
                             fit: BoxFit.cover,
@@ -724,14 +747,13 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                     ],
                   ),
                   SizedBox(height: 10),
-                  // Participant info, Mogoo deadline, and like/comment stats
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Row(
                         children: [
                           Text(
-                            '${post['participants']}/${post['maxParticipants']}',
+                            '${post['currentUserCount']}/${post['userCount']}',
                             style: TextStyle(fontSize: 14, color: Colors.grey),
                           ),
                           SizedBox(width: 8),
@@ -779,25 +801,25 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                             onTap: () {
                               setState(() {
                                 isLiked = !isLiked;
-                                likeCount += isLiked ? 1 : -1;
+                                heartCount += isLiked ? 1 : -1;
                               });
                             },
                             child: Icon(
                               isLiked ? Icons.favorite : Icons.favorite_border,
-                              size: 20, // 하트 아이콘의 크기를 20으로 설정
+                              size: 20,
                               color: Color(0xFFB34FD1),
                             ),
                           ),
                           SizedBox(width: 4),
-                          Text('$likeCount', style: TextStyle(color: Color(0xFFB34FD1))),
+                          Text('$heartCount', style: TextStyle(color: Color(0xFFB34FD1))),
                           SizedBox(width: 16),
                           SvgPicture.asset(
-                            'assets/icons/views.svg', // SVG 아이콘 경로
+                            'assets/icons/views.svg',
                             width: 16,
                             height: 16,
                           ),
                           SizedBox(width: 4),
-                          Text('${post['comments']}', style: TextStyle(color: Color(0xFFB34FD1))),
+                          Text('${post['viewCount']}', style: TextStyle(color: Color(0xFFB34FD1))),
                         ],
                       ),
                     ],
