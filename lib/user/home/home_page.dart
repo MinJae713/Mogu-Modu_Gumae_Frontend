@@ -345,7 +345,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
   void _loadBannerAd() {
     _bannerAd = BannerAd(
-      adUnitId: 'ca-app-pub-3940256099942544/9214589741',
+      adUnitId: dotenv.env['GOOGLE_AD_BANNER_API_KEY'] ?? '',
       size: AdSize.banner,
       request: AdRequest(),
       listener: BannerAdListener(
