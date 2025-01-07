@@ -15,7 +15,7 @@ dependencies:
   http_parser: ^4.0.0
   flutter_svg: ^2.0.9
   image_picker: ^0.8.7+3
-  file_picker: ^5.0.1
+  file_picker: 8.1.7
   intl: ^0.17.0
   geocoding: ^2.0.3
   flutter_naver_map: ^1.2.3+1
