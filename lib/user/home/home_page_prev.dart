@@ -19,6 +19,7 @@ import 'package:mogu_app/user/home/notification_page.dart';
 import '../../service/location_service.dart';
 
 class HomePage extends StatefulWidget {
+  // 이전 파일로 남겨둡니대이
   final Map<String, dynamic> userInfo;
 
   const HomePage({super.key, required this.userInfo});
