@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:mogu_app/admin/home/home_page_FA.dart';
+import 'package:mogu_app/admin/home/home_page_FA_prev.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -118,12 +118,7 @@ class _LoginPageState extends State<LoginPage> {
     String userJson = jsonEncode(userInfo);
     pref.setString('userJson', userJson);
     if (userInfo['role'] == '관리자') {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => HomePageFA(userInfo: userInfo), // 관리자 페이지로 이동
-        ),
-      );
+      Navigator.pushReplacementNamed(context, '/admin/homeMainPageFA');
     } else {
       Navigator.pushReplacementNamed(context, '/user/homeMainPage');
     }
