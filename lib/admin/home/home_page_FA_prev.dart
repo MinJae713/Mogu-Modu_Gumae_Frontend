@@ -80,6 +80,7 @@ class _HomePageFAState extends State<HomePageFA> with SingleTickerProviderStateM
   }
 
   List<Widget> _buildSearchResults() {
+    // home, complaint
     // 홈 탭에서만 게시글을 표시합니다.
     List<Map<String, String>> posts = [
       {
@@ -135,6 +136,7 @@ class _HomePageFAState extends State<HomePageFA> with SingleTickerProviderStateM
   }
 
   List<Widget> _buildMemberList() {
+    // member_managememt
     // 회원관리 탭에서 표시할 회원 목록을 정의합니다.
     List<Map<String, String>> members = [
       {
@@ -186,6 +188,7 @@ class _HomePageFAState extends State<HomePageFA> with SingleTickerProviderStateM
   }
 
   List<Widget> _buildNoticeList() {
+    // complaint_management
     // 공지 탭에서 표시할 공지 목록을 정의합니다.
     List<Map<String, String>> notices = [
       {
@@ -233,6 +236,7 @@ class _HomePageFAState extends State<HomePageFA> with SingleTickerProviderStateM
   }
 
   List<Widget> _buildInquiryList() {
+    // complaint_management
     // 문의 탭에서 표시할 문의 목록을 정의합니다.
     List<Map<String, String>> inquiries = [
       {
@@ -522,6 +526,7 @@ class _HomePageFAState extends State<HomePageFA> with SingleTickerProviderStateM
   }
 
   Widget _buildTabContent() {
+    // complaint_management
     // 회원관리 및 민원관리에서 표시할 컨텐츠를 정의합니다.
     if (_selectedIndex == 1) {
       // 회원관리 탭
@@ -544,6 +549,7 @@ class _HomePageFAState extends State<HomePageFA> with SingleTickerProviderStateM
   }
 
   Widget _buildPostCard({
+    // home, complaint
     required String profileName,
     required String distance,
     required String description,
@@ -686,6 +692,7 @@ class _HomePageFAState extends State<HomePageFA> with SingleTickerProviderStateM
     required String totalTrades,
     required String reports,
   }) {
+    // member_management
     return InkWell(
       onTap: () {
         print('$profileName 회원 클릭됨');
@@ -831,6 +838,7 @@ class _HomePageFAState extends State<HomePageFA> with SingleTickerProviderStateM
     required String likes,
     required String views,
   }) {
+    // complaint_management
     return InkWell(
       onTap: () {
         print('$title 공지 클릭됨');
@@ -921,6 +929,7 @@ class _HomePageFAState extends State<HomePageFA> with SingleTickerProviderStateM
     required String imagePath,
     required String status,
   }) {
+    // complaint_management
     return InkWell(
       onTap: () {
         print('$profileName 문의 클릭됨');
