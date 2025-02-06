@@ -39,7 +39,7 @@ class _HomeMainPage extends State<HomeMainPage> {
   late double latitude;
   late String token;
   int userUid = 0;
-  final List<Map<String, dynamic>> posts = []; // 게시글 리스트 초기화
+  List<Map<String, dynamic>> posts = []; // 게시글 리스트 초기화
 
   Future<void> _getUserInfo() async {
     SharedPreferences pref = await SharedPreferences.getInstance();
@@ -235,6 +235,14 @@ class _HomeMainPage extends State<HomeMainPage> {
     // 위 print는 콜백 로그 찍어보기용
   }
 
+  void _filterByCategory(String value) async {
+    await _findAllPost(context);
+    print(posts);
+    setState(() {
+      posts = posts.where((post) => post['category'] == value).toList();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -258,7 +266,9 @@ class _HomeMainPage extends State<HomeMainPage> {
                   );
                 },
               ),
-            );
+            ).then((value) {
+              _filterByCategory(value);
+            });
           },
         ),
         flexibleSpace: Container(

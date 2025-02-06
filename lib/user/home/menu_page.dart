@@ -43,15 +43,15 @@ class MenuPage extends StatelessWidget {
               crossAxisSpacing: 16,
               mainAxisSpacing: 16,
               children: [
-                _buildCategoryItem(Icons.fastfood, '식료품'),
-                _buildCategoryItem(Icons.local_drink, '일회용품'),
-                _buildCategoryItem(Icons.cleaning_services, '청소용품'),
-                _buildCategoryItem(Icons.brush, '뷰티/미용'),
-                _buildCategoryItem(Icons.videogame_asset, '취미/게임'),
-                _buildCategoryItem(Icons.kitchen, '생활/주방'),
-                _buildCategoryItem(Icons.baby_changing_station, '육아용품'),
-                _buildCategoryItem(Icons.card_giftcard, '기타'),
-                _buildCategoryItem(Icons.card_giftcard, '무료 나눔'),
+                _buildCategoryItem(Icons.fastfood, '식료품', context),
+                _buildCategoryItem(Icons.local_drink, '일회용품', context),
+                _buildCategoryItem(Icons.cleaning_services, '청소용품', context),
+                _buildCategoryItem(Icons.brush, '뷰티/미용', context),
+                _buildCategoryItem(Icons.videogame_asset, '취미/게임', context),
+                _buildCategoryItem(Icons.kitchen, '생활/주방', context),
+                _buildCategoryItem(Icons.baby_changing_station, '육아용품', context),
+                _buildCategoryItem(Icons.card_giftcard, '기타', context),
+                _buildCategoryItem(Icons.card_giftcard, '무료 나눔', context),
               ],
             ),
             SizedBox(height: 16), // 고객센터와 무료나눔 사이의 간격 조정
@@ -76,7 +76,8 @@ class MenuPage extends StatelessWidget {
     );
   }
 
-  Widget _buildCategoryItem(IconData iconData, String label) {
+  Widget _buildCategoryItem(IconData iconData,
+      String label, BuildContext context) {
     return Column(
       children: [
         Material(
@@ -90,7 +91,7 @@ class MenuPage extends StatelessWidget {
               borderRadius: BorderRadius.circular(32),
               splashColor: Colors.purple.withOpacity(0.2),
               onTap: () {
-                print('$label 클릭됨');
+                Navigator.pop(context, label);
               },
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
