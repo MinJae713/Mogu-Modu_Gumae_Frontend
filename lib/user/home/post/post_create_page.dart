@@ -53,6 +53,7 @@ class _PostCreatePageState extends State<PostCreatePage> {
   final FocusNode _titleFocusNode = FocusNode();
   final FocusNode _contentFocusNode = FocusNode();
   final FocusNode _priceFocusNode = FocusNode();
+  final FocusNode _customerPriceFocusNode = FocusNode();
   final FocusNode _personFocusNode = FocusNode();
 
   @override
@@ -438,6 +439,7 @@ class _PostCreatePageState extends State<PostCreatePage> {
   }
 
   void _toggleShareCondition(bool isEqual) {
+    // true는 균등, false는 커스텀
     setState(() {
       isShareConditionEqual = isEqual;
       showCustomPriceError = false;
@@ -630,7 +632,7 @@ class _PostCreatePageState extends State<PostCreatePage> {
             _buildDetailRow('상품 구매', purchaseStatus, _selectPurchaseStatus),
             _buildDetailRow('마감 기한',
                 DateFormat('yyyy/MM/dd').format(selectedDate), _selectDate),
-            _buildPriceInputRow('상품 구매 가격', priceController),
+            _buildPriceInputRow('상품 구매 가격', priceController, _priceFocusNode, true),
             if (!isPriceValid)
               Row(
                 children: [
@@ -654,7 +656,7 @@ class _PostCreatePageState extends State<PostCreatePage> {
               ),
             _buildShareConditionRow(),
             if (!isShareConditionEqual)
-              _buildPriceInputRow('인당 가격 설정', customPriceController),
+              _buildPriceInputRow('인당 가격 설정', customPriceController, _customerPriceFocusNode, false),
             if (!isCustomPriceValid && showCustomPriceError)
               Row(
                 children: [
@@ -663,7 +665,7 @@ class _PostCreatePageState extends State<PostCreatePage> {
                     "인당 가격을 입력하세요",
                     style: TextStyle(color: Colors.red, fontSize: 12),
                   ),
-                ],
+                ]
               ),
             _buildDetailRow('할인된 가격', chiefPrice, null, false),
             if (showDiscountError)
@@ -798,7 +800,8 @@ class _PostCreatePageState extends State<PostCreatePage> {
     );
   }
 
-  Widget _buildPriceInputRow(String title, TextEditingController controller) {
+  Widget _buildPriceInputRow(String title, TextEditingController controller,
+      FocusNode focusNode, bool isProductPrice) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
@@ -812,9 +815,10 @@ class _PostCreatePageState extends State<PostCreatePage> {
             width: 150,
             child: TextFormField(
               controller: controller,
-              focusNode: _priceFocusNode,
+              focusNode: focusNode,
               onFieldSubmitted: (value) {
-                FocusScope.of(context).requestFocus(_personFocusNode);
+                if (isProductPrice)
+                  FocusScope.of(context).requestFocus(_personFocusNode);
               },
               keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
