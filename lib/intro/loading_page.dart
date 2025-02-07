@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'first_page.dart';
+import 'intro_page.dart';
 
 class LoadingPage extends StatefulWidget {
   const LoadingPage({super.key});

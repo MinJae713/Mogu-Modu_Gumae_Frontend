@@ -4,7 +4,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:mogu_app/admin/home/main_page/complaint_management_page/complaint_management_page.dart';
 import 'package:mogu_app/admin/home/main_page/home_page/home_page_FA.dart';
 import 'package:mogu_app/admin/home/main_page/member_management_page/member_management_page.dart';
-import 'package:mogu_app/firstStep/loading_page.dart';
+import 'package:mogu_app/intro/loading_page.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:mogu_app/user/home/main_page/chatting_page/chatting_page.dart';
 import 'package:mogu_app/user/home/main_page/home_page/home_page.dart';

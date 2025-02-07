@@ -24,14 +24,6 @@ class _HomePageBottomState extends State<HomePageBottom> {
       case 3:
         Navigator.pushReplacementNamed(context, '/user/myPage');
     }
-    if (index == 0) {
-      // 홈 화면이 선택된 경우에만 포스트 목록을 새로고침
-      // 옮기기 일단 보류
-      // await _findAllPost(context);
-    }
-    // setState(() {
-    //   selectedIndex = index;
-    // });
   }
   @override
   Widget build(BuildContext context) {
