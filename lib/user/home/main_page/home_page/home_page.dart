@@ -64,7 +64,8 @@ class _HomeMainPage extends State<HomeMainPage> {
     _getUserInfo().then((value) {
       _initializeUserInfo();
       findUserLevel(context);
-      _findAllPost(context); // 초기화 시 모든 게시글을 불러옴
+      _findAllPost(context);
+       // 초기화 시 모든 게시글을 불러옴
     });
   }
 
@@ -237,7 +238,6 @@ class _HomeMainPage extends State<HomeMainPage> {
 
   void _filterByCategory(String value) async {
     await _findAllPost(context);
-    print(posts);
     setState(() {
       posts = posts.where((post) => post['category'] == value).toList();
     });

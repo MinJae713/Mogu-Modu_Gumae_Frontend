@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mogu_app/firstStep/sign_up_page.dart';
+import 'package:mogu_app/authentication/signUp/sign_up_page.dart';
 
 class TermsandPolicyPage extends StatefulWidget {
   const TermsandPolicyPage({super.key});

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:mogu_app/firstStep/termsand_policy_page.dart';
-import 'login_page.dart';
-import 'social_login_page.dart'; // 추가
+import 'package:mogu_app/authentication/signUp/termsand_policy_page.dart';
+import '../authentication/signIn/login_page.dart';
+import '../authentication/signIn/social_login_page.dart'; // 추가
 
 class FirstPage extends StatelessWidget {
   const FirstPage({super.key});

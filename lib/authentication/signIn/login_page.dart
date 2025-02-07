@@ -288,6 +288,9 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                           ),
                           onPressed: () {
+                            // String username = usernameController.text;
+                            // String pw = passwordController.text;
+                            // login(context, username, pw); // View Model
                             login(context);
                           },
                           child: Text(

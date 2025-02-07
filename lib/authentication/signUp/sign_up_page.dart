@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:http/http.dart' as http;
-import 'package:mogu_app/firstStep/login_page.dart';
+import 'package:mogu_app/authentication/signIn/login_page.dart';
 import 'package:mogu_app/service/location_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
