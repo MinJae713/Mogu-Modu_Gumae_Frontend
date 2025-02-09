@@ -1,24 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'intro_page.dart';
 
-class LoadingPage extends StatefulWidget {
-  const LoadingPage({super.key});
+import '../intro_page/intro_page.dart';
 
-  @override
-  _LoadingPageState createState() => _LoadingPageState();
-}
-
-class _LoadingPageState extends State<LoadingPage> {
-  @override
-  void initState() {
-    super.initState();
-    _requestPermissions().then((_) {
-      _navigateToNextPage();
-    });
-  }
-
-  Future<void> _requestPermissions() async {
+class LoadingPageViewModel extends ChangeNotifier {
+  Future<void> requestPermissions(BuildContext context) async {
     Map<Permission, PermissionStatus> statuses = await [
       Permission.photos,
       Permission.camera,
@@ -59,7 +45,7 @@ class _LoadingPageState extends State<LoadingPage> {
     }
   }
 
-  void _navigateToNextPage() {
+  void navigateToNextPage(BuildContext context) {
     // 2초 대기 후 다음 페이지로 이동
     Future.delayed(Duration(seconds: 2), () {
       Navigator.pushReplacement(
@@ -67,32 +53,5 @@ class _LoadingPageState extends State<LoadingPage> {
         MaterialPageRoute(builder: (context) => FirstPage()),
       );
     });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment(0.71, -0.71),
-            end: Alignment(-0.71, 0.71),
-            colors: const [Color(0xFFFFA7E1), Color(0xB29322CC)],
-          ),
-        ),
-        child: Center(
-          child: SizedBox(
-            width: 113,
-            height: 104,
-            child: Image.asset(
-              'assets/Mogulogo.png',
-              fit: BoxFit.contain,
-            ),
-          ),
-        ),
-      ),
-    );
   }
 }

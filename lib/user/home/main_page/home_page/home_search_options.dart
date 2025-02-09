@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'home_toggle_button.dart';
+import 'widgets/home_toggle_button.dart';
 
 class HomeSearchOptions {
   final Function applySearchOptions;

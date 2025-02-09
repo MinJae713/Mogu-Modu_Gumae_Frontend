@@ -13,7 +13,7 @@ import 'package:mogu_app/user/myPage/account_management_page.dart';
 import 'package:mogu_app/user/home/post/post_detail_page.dart';
 import 'package:mogu_app/user/myPage/setting_page.dart';
 import 'package:mogu_app/user/myPage/update_profile_page.dart';
-import 'package:mogu_app/user/home/menu_page.dart';
+import 'package:mogu_app/user/home/menu_page/menu_page.dart';
 import 'package:mogu_app/user/home/notification_page.dart';
 
 import '../../service/location_service.dart';

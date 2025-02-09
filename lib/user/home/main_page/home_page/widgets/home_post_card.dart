@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
-import '../../post/post_detail_page.dart';
+import '../../../post/post_detail_page.dart';
 
 class HomePostCard extends StatefulWidget {
   final Map<String, dynamic> post;
