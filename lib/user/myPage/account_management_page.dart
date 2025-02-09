@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
-import '../../intro/loading_page.dart';
+import '../../intro/loading_page/loading_page.dart';
 
 class AccountManagementPage extends StatefulWidget {
   final Map<String, dynamic> userInfo;

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mogu_app/authentication/signUp/termsand_policy_page.dart';
-import '../authentication/signIn/login_page.dart';
-import '../authentication/signIn/social_login_page.dart'; // 추가
+import 'package:mogu_app/intro/intro_page/widgets/intro_page_button.dart';
+import '../../authentication/signIn/login_page.dart';
+import '../../authentication/signIn/social_login_page.dart'; // 추가
 
 class FirstPage extends StatelessWidget {
   const FirstPage({super.key});
@@ -39,51 +40,57 @@ class FirstPage extends StatelessWidget {
                           width: screenWidth * 0.9,
                           child: Column(
                             children: [
-                              _buildButton('구글로 로그인', () {
-                                Navigator.push(
-                                  context,
-                                  PageRouteBuilder(
-                                    pageBuilder: (context, animation, secondaryAnimation) =>
-                                        SocialLoginPage(), // SocialLoginPage로 이동
-                                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                                      const begin = Offset(1.0, 0.0); // 오른쪽에서 시작
-                                      const end = Offset.zero;
-                                      const curve = Curves.ease;
+                              IntroPageButton(
+                                text: '구글로 로그인',
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    PageRouteBuilder(
+                                      pageBuilder: (context, animation, secondaryAnimation) =>
+                                          SocialLoginPage(), // SocialLoginPage로 이동
+                                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                        const begin = Offset(1.0, 0.0); // 오른쪽에서 시작
+                                        const end = Offset.zero;
+                                        const curve = Curves.ease;
 
-                                      var tween = Tween(begin: begin, end: end)
-                                          .chain(CurveTween(curve: curve));
+                                        var tween = Tween(begin: begin, end: end)
+                                            .chain(CurveTween(curve: curve));
 
-                                      return SlideTransition(
-                                        position: animation.drive(tween),
-                                        child: child,
-                                      );
-                                    },
-                                  ),
-                                );
-                              }),
+                                        return SlideTransition(
+                                          position: animation.drive(tween),
+                                          child: child,
+                                        );
+                                      },
+                                    ),
+                                  );
+                                }
+                              ),
                               SizedBox(height: screenHeight * 0.01),
-                              _buildButton('이메일로 로그인하기', () {
-                                Navigator.push(
-                                  context,
-                                  PageRouteBuilder(
-                                    pageBuilder: (context, animation, secondaryAnimation) =>
-                                        LoginPage(),
-                                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                                      const begin = Offset(1.0, 0.0); // 오른쪽에서 시작
-                                      const end = Offset.zero;
-                                      const curve = Curves.ease;
+                              IntroPageButton(
+                                text: '이메일로 로그인하기',
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    PageRouteBuilder(
+                                      pageBuilder: (context, animation, secondaryAnimation) =>
+                                          LoginPage(),
+                                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                        const begin = Offset(1.0, 0.0); // 오른쪽에서 시작
+                                        const end = Offset.zero;
+                                        const curve = Curves.ease;
 
-                                      var tween = Tween(begin: begin, end: end)
-                                          .chain(CurveTween(curve: curve));
+                                        var tween = Tween(begin: begin, end: end)
+                                            .chain(CurveTween(curve: curve));
 
-                                      return SlideTransition(
-                                        position: animation.drive(tween),
-                                        child: child,
-                                      );
-                                    },
-                                  ),
-                                );
-                              }),
+                                        return SlideTransition(
+                                          position: animation.drive(tween),
+                                          child: child,
+                                        );
+                                      },
+                                    ),
+                                  );
+                                }
+                              ),
                               SizedBox(height: screenHeight * 0.03),
                               TextButton(
                                 onPressed: () {
@@ -144,29 +151,6 @@ class FirstPage extends StatelessWidget {
             ),
           );
         },
-      ),
-    );
-  }
-
-  Widget _buildButton(String text, VoidCallback onPressed) {
-    return TextButton(
-      onPressed: onPressed,
-      style: TextButton.styleFrom(
-        backgroundColor: Color(0xFFFFD3F0),
-        minimumSize: Size(double.infinity, 58),
-        padding: EdgeInsets.zero,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          color: Color(0xFFB34FD1),
-          fontSize: 18,
-          fontFamily: 'Inter',
-          fontWeight: FontWeight.w400,
-        ),
       ),
     );
   }

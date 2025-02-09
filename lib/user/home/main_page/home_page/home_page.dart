@@ -7,12 +7,12 @@ import 'package:flutter_svg/svg.dart';
 import 'package:http/http.dart' as http;
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:mogu_app/user/home/main_page/common/common_methods.dart';
-import 'package:mogu_app/user/home/main_page/home_page/home_post_card.dart';
+import 'package:mogu_app/user/home/main_page/home_page/widgets/home_post_card.dart';
 import 'package:mogu_app/user/home/main_page/home_page/home_search_options.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../service/location_service.dart';
-import '../../menu_page.dart';
+import '../../menu_page/menu_page.dart';
 import '../../notification_page.dart';
 import '../../post/post_create_page.dart';
 import '../../search_page.dart';

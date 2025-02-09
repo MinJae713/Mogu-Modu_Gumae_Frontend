@@ -1,43 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import 'chat_room_page_viewModel.dart';
 
 class ChatRoomPage extends StatelessWidget {
   const ChatRoomPage({super.key});
 
-  void _showMoreOptions(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      builder: (BuildContext context) {
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            ListTile(
-              title: Text('알림 끄기 / 알림 켜기'),
-              onTap: () {
-                // 알림 끄기/켜기 동작을 정의하세요.
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: Text('채팅방 나가기'),
-              onTap: () {
-                // 채팅방 나가기 동작을 정의하세요.
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: Text('취소'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
+    final viewModel = Provider.of<ChatRoomPageViewModel>(context, listen: false);
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -76,7 +47,7 @@ class ChatRoomPage extends StatelessWidget {
           IconButton(
             icon: Icon(Icons.more_vert),
             onPressed: () {
-              _showMoreOptions(context);
+              viewModel.showMoreOptions(context);
             },
             color: Color(0xFFFFD3F0),
           ),
