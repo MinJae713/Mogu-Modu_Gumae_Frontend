@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mogu_app/admin/people/people_page/widgets/nav_item.dart';
 
 class PeoplePage extends StatelessWidget {
   const PeoplePage({super.key});
@@ -11,7 +12,7 @@ class PeoplePage extends StatelessWidget {
           icon: Icon(Icons.arrow_back),
           color: Color(0xFFE9F8FF),
           onPressed: () {
-            // 이 버튼을 눌렀을 때 실행될 동작을 정의하세요.
+            // 뒤로가기 동작
           },
         ),
         flexibleSpace: Container(
@@ -27,7 +28,7 @@ class PeoplePage extends StatelessWidget {
           IconButton(
             icon: Icon(Icons.more_vert),
             onPressed: () {
-              // 이 버튼을 눌렀을 때 실행될 동작을 정의하세요.
+              // 추가 동작
             },
             color: Color(0xFFFFD3F0),
           ),
@@ -42,36 +43,13 @@ class PeoplePage extends StatelessWidget {
           height: 64,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildNavItem(Icons.home, '홈', false),
-              _buildNavItem(Icons.people, '회원관리', true),
-              _buildNavItem(Icons.campaign, '민원관리', false),
+            children: const [
+              NavItem(icon: Icons.home, label: '홈', isSelected: false),
+              NavItem(icon: Icons.people, label: '회원관리', isSelected: true),
+              NavItem(icon: Icons.campaign, label: '민원관리', isSelected: false),
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildNavItem(IconData icon, String label, bool isSelected) {
-    return Expanded(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            icon,
-            color: isSelected ? Color(0xFFB34FD1) : Color(0xFFFFBDE9),
-          ),
-          Text(
-            label,
-            style: TextStyle(
-              color: isSelected ? Color(0xFFB34FD1) : Color(0xFFFFBDE9),
-              fontSize: 9,
-              fontFamily: 'Inter',
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
       ),
     );
   }
