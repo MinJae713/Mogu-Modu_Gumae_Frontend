@@ -19,7 +19,7 @@ class ChatRoomPage extends StatelessWidget {
           },
         ),
         title: Row(
-          children: [
+          children: const [
             CircleAvatar(
               backgroundColor: Colors.grey,
               child: Icon(Icons.person, color: Colors.white), // 임시 아이콘
@@ -39,7 +39,7 @@ class ChatRoomPage extends StatelessWidget {
             gradient: LinearGradient(
               begin: Alignment(0.68, -0.73),
               end: Alignment(-0.68, 0.73),
-              colors: [Color(0xFFFFA7E1), Color(0xB29322CC)],
+              colors: const [Color(0xFFFFA7E1), Color(0xB29322CC)],
             ),
           ),
         ),
@@ -59,7 +59,7 @@ class ChatRoomPage extends StatelessWidget {
           children: [
             // 채팅방 제목과 관련 정보 표시
             Row(
-              children: [
+              children: const [
                 Icon(Icons.circle, color: Colors.purple, size: 12), // 장소 아이콘
                 SizedBox(width: 4),
                 Text("명지사거리 우리은행 앞", style: TextStyle(fontSize: 12)),
@@ -114,7 +114,7 @@ class ChatRoomPage extends StatelessWidget {
                         SizedBox(height: 4),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
+                          children: const [
                             CircleAvatar(
                               radius: 10,
                               backgroundColor: Colors.grey, // Placeholder for profile image
@@ -141,7 +141,7 @@ class ChatRoomPage extends StatelessWidget {
               child: Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [
+                    colors: const [
                       Color(0xFFFFBDE9),
                       Color(0xFFFFD3F0),
                     ],

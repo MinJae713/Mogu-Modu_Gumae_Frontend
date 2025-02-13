@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mogu_app/user/home/post/report/post_report_page.dart';
+import 'package:mogu_app/user/home/post/post_detail_page/post_detail_page_viewModel.dart';
+import 'package:provider/provider.dart';
 
 class PostDetailPage extends StatefulWidget {
   final Map<String, dynamic> post; // 포스트 데이터를 받을 수 있도록 생성자에 추가
@@ -12,75 +13,16 @@ class PostDetailPage extends StatefulWidget {
 }
 
 class _PostDetailPageState extends State<PostDetailPage> {
-  bool _isHeartFilled = false; // 하트 아이콘의 상태를 저장하는 변수
-  late int _likeCount; // 좋아요 수를 저장하는 변수
-  late int _viewCount; // 조회수를 저장하는 변수
-
   @override
   void initState() {
     super.initState();
-    // widget.post 데이터를 이용하여 초기 좋아요 및 조회수 값을 설정
-    _likeCount = widget.post['heartCount'] ?? 0;
-    _viewCount = widget.post['viewCount'] ?? 0;
-  }
-
-  void _toggleHeart() {
-    setState(() {
-      _isHeartFilled = !_isHeartFilled; // 하트 아이콘의 상태를 토글
-      _isHeartFilled ? _likeCount++ : _likeCount--; // 좋아요 수 증가/감소
-    });
-  }
-
-  void _onParticipateRequest() {
-    // 참여요청 버튼 눌렀을 때 동작을 여기에 정의합니다.
-    print('참여요청 버튼 눌림');
-    print('User UID: ${widget.userUid}'); // userUid를 출력하여 확인
-  }
-
-  void _showBottomSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (BuildContext context) {
-        return Container(
-          padding: EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                title: Text('게시글 신고하기'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => PostReportPage()),
-                  );
-                },
-              ),
-              ListTile(
-                title: Text('게시글 숨기기'),
-                onTap: () {
-                  Navigator.pop(context);
-                  // 게시글 숨기기 동작 추가
-                },
-              ),
-              ListTile(
-                title: Text('취소'),
-                onTap: () {
-                  Navigator.pop(context);
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
+    final viewModel = Provider.of<PostDetailPageViewModel>(context, listen: false);
+    viewModel.initViewModel(widget.post);
   }
 
   @override
   Widget build(BuildContext context) {
+    final viewModel = Provider.of<PostDetailPageViewModel>(context);
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -103,7 +45,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
           IconButton(
             icon: Icon(Icons.more_vert),
             onPressed: () {
-              _showBottomSheet(context);
+              viewModel.showBottomSheet(context);
             },
             color: Color(0xFFFFD3F0),
           ),
@@ -140,14 +82,14 @@ class _PostDetailPageState extends State<PostDetailPage> {
                     children: [
                       Icon(Icons.visibility, color: Colors.white),
                       SizedBox(width: 4),
-                      Text('$_viewCount', style: TextStyle(color: Colors.white)),
+                      Text('${viewModel.model!.viewCount}', style: TextStyle(color: Colors.white)),
                       SizedBox(width: 16),
                       Icon(
-                        _isHeartFilled ? Icons.favorite : Icons.favorite_border,
+                        viewModel.model!.isHeartFilled ? Icons.favorite : Icons.favorite_border,
                         color: Colors.white,
                       ),
                       SizedBox(width: 4),
-                      Text('$_likeCount', style: TextStyle(color: Colors.white)),
+                      Text('${viewModel.model!.likeCount}', style: TextStyle(color: Colors.white)),
                     ],
                   ),
                 ),
@@ -297,10 +239,10 @@ class _PostDetailPageState extends State<PostDetailPage> {
           children: [
             IconButton(
               icon: Icon(
-                _isHeartFilled ? Icons.favorite : Icons.favorite_border,
-                color: _isHeartFilled ? Colors.red : Color(0xFFFFD3F0),
+                viewModel.model!.isHeartFilled ? Icons.favorite : Icons.favorite_border,
+                color: viewModel.model!.isHeartFilled ? Colors.red : Color(0xFFFFD3F0),
               ),
-              onPressed: _toggleHeart,
+              onPressed: viewModel.toggleHeart,
             ),
             SizedBox(width: 10), // 하트 아이콘과 버튼 사이의 여백 추가
             Expanded(
@@ -308,7 +250,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
                 color: Color(0xFFB34FD1),
                 borderRadius: BorderRadius.circular(10),
                 child: InkWell(
-                  onTap: _onParticipateRequest,
+                  onTap: () => viewModel.onParticipateRequest(widget.userUid),
                   borderRadius: BorderRadius.circular(10),
                   splashColor: Colors.white.withOpacity(0.3),
                   child: Container(
