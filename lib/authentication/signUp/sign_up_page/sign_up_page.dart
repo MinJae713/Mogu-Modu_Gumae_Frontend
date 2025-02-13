@@ -1,3 +1,4 @@
+// lib/authentication/signUp/sign_up_page.dart
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -6,6 +7,15 @@ import 'package:http/http.dart' as http;
 import 'package:mogu_app/authentication/signIn/login_page.dart';
 import 'package:mogu_app/service/location_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+// 분리한 위젯 임포트
+import 'widgets/user_id_field.dart';
+import 'widgets/verification_code_field.dart';
+import 'widgets/password_field.dart';
+import 'widgets/confirm_password_field.dart';
+import 'widgets/phone_number_field.dart';
+import 'widgets/phone_verification_code_field.dart';
+import 'widgets/location_field.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -17,7 +27,7 @@ class SignUpPage extends StatefulWidget {
 class _SignUpPageState extends State<SignUpPage> {
   final TextEditingController userIdController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmPasswordController = TextEditingController(); // 비밀번호 확인 필드 추가
+  final TextEditingController confirmPasswordController = TextEditingController();
   final TextEditingController nameController = TextEditingController();
   final TextEditingController nicknameController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
@@ -32,9 +42,9 @@ class _SignUpPageState extends State<SignUpPage> {
   bool isEmailVerified = false;
   bool isPhoneVerified = false;
 
-  final LocationService _locationService = LocationService(); // LocationService 인스턴스 생성
+  final LocationService _locationService = LocationService();
 
-  // FocusNodes 추가
+  // FocusNodes
   final FocusNode _userIdFocusNode = FocusNode();
   final FocusNode _passwordFocusNode = FocusNode();
   final FocusNode _confirmPasswordFocusNode = FocusNode();
@@ -71,7 +81,8 @@ class _SignUpPageState extends State<SignUpPage> {
       String nickname = nicknameController.text;
       String phone = phoneController.text.replaceAll('-', '');
 
-      String url = 'http://${dotenv.env['SERVER_IP']}:${dotenv.env['SERVER_PORT']}/user';
+      String url =
+          'http://${dotenv.env['SERVER_IP']}:${dotenv.env['SERVER_PORT']}/user';
 
       try {
         final response = await http.post(
@@ -149,7 +160,8 @@ class _SignUpPageState extends State<SignUpPage> {
 
   void _verifyEmail() {
     final email = userIdController.text;
-    final emailRegExp = RegExp(r'^[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[a-zA-Z]+');
+    final emailRegExp =
+    RegExp(r'^[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[a-zA-Z]+');
 
     if (email.isEmpty || !emailRegExp.hasMatch(email)) {
       _showErrorDialog('오류', '유효한 이메일 주소를 입력해주세요');
@@ -235,37 +247,81 @@ class _SignUpPageState extends State<SignUpPage> {
                   ),
                 ),
                 SizedBox(height: 24),
-                _buildUserIdField(),
+                // 기존 _buildUserIdField() 대신 분리한 위젯 사용
+                UserIdField(
+                  controller: userIdController,
+                  focusNode: _userIdFocusNode,
+                  onVerify: _verifyEmail,
+                  onFieldSubmitted: (value) {
+                    FocusScope.of(context).requestFocus(_passwordFocusNode);
+                  },
+                ),
                 if (isVerificationFieldVisible) ...[
                   SizedBox(height: 16),
-                  _buildVerificationCodeField(),
+                  VerificationCodeField(
+                    controller: verificationCodeController,
+                    onConfirm: _confirmVerificationCode,
+                  ),
                 ],
                 SizedBox(height: 16),
-                _buildPasswordField(),
+                PasswordField(
+                  controller: passwordController,
+                  focusNode: _passwordFocusNode,
+                  nextFocusNode: _confirmPasswordFocusNode,
+                ),
                 SizedBox(height: 16),
-                _buildConfirmPasswordField(),
+                ConfirmPasswordField(
+                  controller: confirmPasswordController,
+                  passwordController: passwordController,
+                  focusNode: _confirmPasswordFocusNode,
+                  nextFocusNode: _nameFocusNode,
+                ),
                 SizedBox(height: 16),
-                _buildTextFieldWithLabel("이름", true, "이름을 입력하세요", nameController,
+                // 이름과 닉네임은 기존 _buildTextFieldWithLabel 사용 (코드 분리하지 않음)
+                _buildTextFieldWithLabel(
+                  "이름",
+                  true,
+                  "이름을 입력하세요",
+                  nameController,
                   focusNode: _nameFocusNode,
                   onFieldSubmitted: (value) {
                     FocusScope.of(context).requestFocus(_nicknameFocusNode);
                   },
                 ),
                 SizedBox(height: 16),
-                _buildTextFieldWithLabel("닉네임", true, "닉네임을 입력하세요", nicknameController,
+                _buildTextFieldWithLabel(
+                  "닉네임",
+                  true,
+                  "닉네임을 입력하세요",
+                  nicknameController,
                   focusNode: _nicknameFocusNode,
                   onFieldSubmitted: (value) {
                     FocusScope.of(context).requestFocus(_phoneFocusNode);
                   },
                 ),
                 SizedBox(height: 16),
-                _buildPhoneNumberField(),
+                PhoneNumberField(
+                  controller: phoneController,
+                  focusNode: _phoneFocusNode,
+                  onVerify: _verifyPhoneNumber,
+                  onFieldSubmitted: (value) {
+                    FocusScope.of(context).requestFocus(_addressFocusNode);
+                  },
+                ),
                 if (isPhoneVerificationFieldVisible) ...[
                   SizedBox(height: 16),
-                  _buildPhoneVerificationCodeField(),
+                  // 분리한 핸드폰 인증번호 위젯 사용
+                  PhoneVerificationCodeField(
+                    controller: phoneVerificationCodeController,
+                    onConfirm: _confirmPhoneVerificationCode,
+                  ),
                 ],
                 SizedBox(height: 16),
-                _buildLocationField(),
+                LocationField(
+                  controller: addressController,
+                  onLocationSelect: _onLocationIconPressed,
+                  focusNode: _addressFocusNode,
+                ),
               ],
             ),
           ),
@@ -299,193 +355,7 @@ class _SignUpPageState extends State<SignUpPage> {
     );
   }
 
-  Widget _buildUserIdField() {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildTextFieldWithLabel(
-            "아이디 (이메일주소)", true, "이메일을 입력하세요", userIdController,
-            focusNode: _userIdFocusNode,
-            onFieldSubmitted: (value) {
-              FocusScope.of(context).requestFocus(_passwordFocusNode);
-            },
-          ),
-        ),
-        SizedBox(width: 8),
-        ElevatedButton(
-          onPressed: _verifyEmail,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Color(0xFFB34FD1),
-            minimumSize: Size(150, 50),
-          ),
-          child: Text(
-            '이메일 인증하기',
-            style: TextStyle(color: Colors.white),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildVerificationCodeField() {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildTextFieldWithLabel(
-            "인증번호 입력",
-            true,
-            "인증번호를 입력하세요",
-            verificationCodeController,
-          ),
-        ),
-        SizedBox(width: 8),
-        ElevatedButton(
-          onPressed: _confirmVerificationCode,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Color(0xFFB34FD1),
-            minimumSize: Size(150, 50),
-          ),
-          child: Text(
-            '인증번호 확인',
-            style: TextStyle(color: Colors.white),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPasswordField() {
-    return _buildTextFieldWithLabel(
-      "패스워드",
-      true,
-      "패스워드를 입력하세요",
-      passwordController,
-      obscureText: true,
-      focusNode: _passwordFocusNode,
-      onFieldSubmitted: (value) {
-        FocusScope.of(context).requestFocus(_confirmPasswordFocusNode);
-      },
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return '패스워드를 입력해주세요';
-        }
-
-        if (value.length < 8 || value.length > 16) {
-          return '패스워드는 8자에서 16자 사이여야 합니다';
-        }
-
-        final passwordRegExp = RegExp(r'^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%^&*?_]).{8,16}$');
-        if (!passwordRegExp.hasMatch(value)) {
-          return '비밀번호는 숫자, 영문, 특수문자 조합이어야 합니다.';
-        }
-
-        return null;
-      },
-    );
-  }
-
-  Widget _buildConfirmPasswordField() {
-    return _buildTextFieldWithLabel(
-      "패스워드 확인",
-      true,
-      "패스워드를 다시 입력하세요",
-      confirmPasswordController,
-      obscureText: true,
-      focusNode: _confirmPasswordFocusNode,
-      onFieldSubmitted: (value) {
-        FocusScope.of(context).requestFocus(_nameFocusNode);
-      },
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return '패스워드 확인을 입력해주세요';
-        }
-        if (value != passwordController.text) {
-          return '서로 다른 비밀번호가 입력되었습니다';
-        }
-        return null;
-      },
-    );
-  }
-
-  Widget _buildPhoneNumberField() {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildTextFieldWithLabel(
-            "핸드폰번호",
-            true,
-            "핸드폰 번호를 입력하세요",
-            phoneController,
-            keyboardType: TextInputType.phone,
-            inputFormatters: [
-              FilteringTextInputFormatter.digitsOnly,
-              LengthLimitingTextInputFormatter(11),
-              PhoneNumberFormatter(),
-            ],
-            focusNode: _phoneFocusNode,
-            onFieldSubmitted: (value) {
-              FocusScope.of(context).requestFocus(_addressFocusNode);
-            },
-          ),
-        ),
-        SizedBox(width: 8),
-        ElevatedButton(
-          onPressed: _verifyPhoneNumber,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Color(0xFFB34FD1),
-            minimumSize: Size(150, 50),
-          ),
-          child: Text(
-            '인증하기',
-            style: TextStyle(color: Colors.white),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPhoneVerificationCodeField() {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildTextFieldWithLabel(
-            "핸드폰 인증번호 입력",
-            true,
-            "핸드폰 인증번호를 입력하세요",
-            phoneVerificationCodeController,
-          ),
-        ),
-        SizedBox(width: 8),
-        ElevatedButton(
-          onPressed: _confirmPhoneVerificationCode,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Color(0xFFB34FD1),
-            minimumSize: Size(150, 50),
-          ),
-          child: Text(
-            '인증번호 확인',
-            style: TextStyle(color: Colors.white),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildLocationField() {
-    return _buildTextFieldWithLabel(
-      "주소",
-      true,
-      "주소를 선택해주세요",
-      addressController,
-      suffixIcon: IconButton(
-        icon: Icon(Icons.location_on, color: Color(0xFFB34FD1)),
-        onPressed: _onLocationIconPressed,
-      ),
-      focusNode: _addressFocusNode,
-      readOnly: true,
-    );
-  }
-
+  // 기존 _buildTextFieldWithLabel 메서드는 그대로 둡니다.
   Widget _buildTextFieldWithLabel(
       String labelText,
       bool isRequired,
@@ -553,8 +423,8 @@ class _SignUpPageState extends State<SignUpPage> {
                   return '$labelText를 입력해주세요';
                 }
                 if (labelText == "아이디 (이메일주소)") {
-                  final emailRegExp = RegExp(
-                      r'^[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[a-zA-Z]+');
+                  final emailRegExp =
+                  RegExp(r'^[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[a-zA-Z]+');
                   if (!emailRegExp.hasMatch(value)) {
                     return '유효한 이메일 주소를 입력해주세요';
                   }
@@ -562,7 +432,8 @@ class _SignUpPageState extends State<SignUpPage> {
                   if (value.length < 8 || value.length > 16) {
                     return '패스워드는 8자에서 16자 사이여야 합니다';
                   }
-                  final passwordRegExp = RegExp(r'^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%^&*?_]).{8,16}$');
+                  final passwordRegExp = RegExp(
+                      r'^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%^&*?_]).{8,16}$');
                   if (!passwordRegExp.hasMatch(value)) {
                     return '비밀번호는 숫자, 영문, 특수문자 조합이어야 합니다.';
                   }
@@ -584,28 +455,5 @@ class _SignUpPageState extends State<SignUpPage> {
         ),
       ],
     );
-  }
-}
-
-// 전화번호 형식 맞춤 포맷터
-class PhoneNumberFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue, TextEditingValue newValue) {
-    final text = newValue.text;
-    if (text.length > 3 && text.length <= 7) {
-      final formattedText = '${text.substring(0, 3)}-${text.substring(3)}';
-      return newValue.copyWith(
-        text: formattedText,
-        selection: TextSelection.collapsed(offset: formattedText.length),
-      );
-    } else if (text.length > 7 && text.length <= 11) {
-      final formattedText = '${text.substring(0, 3)}-${text.substring(3, 7)}-${text.substring(7)}';
-      return newValue.copyWith(
-        text: formattedText,
-        selection: TextSelection.collapsed(offset: formattedText.length),
-      );
-    }
-    return newValue;
   }
 }

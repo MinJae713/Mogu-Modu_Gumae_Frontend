@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mogu_app/authentication/signUp/termsand_policy_page.dart';
+import 'package:mogu_app/authentication/signUp/termsand_policy_page/termsand_policy_page.dart';
 import 'package:mogu_app/intro/intro_page/widgets/intro_page_button.dart';
 import '../../authentication/signIn/login_page.dart';
 import '../../authentication/signIn/social_login_page.dart'; // 추가

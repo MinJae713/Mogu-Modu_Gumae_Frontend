@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mogu_app/authentication/signUp/sign_up_page.dart';
+import 'package:mogu_app/authentication/signUp/sign_up_page/sign_up_page.dart';
+import 'package:mogu_app/authentication/signUp/termsand_policy_page/widgets/checkbox_with_text.dart';
 
 class TermsandPolicyPage extends StatefulWidget {
   const TermsandPolicyPage({super.key});
@@ -70,7 +71,7 @@ class _TermsandPolicyPageState extends State<TermsandPolicyPage> {
                           fontSize: 24,
                           fontFamily: 'Inter',
                           fontWeight: FontWeight.w500,
-                          height: 1.5, // 줄 간격 조정
+                          height: 1.5,
                         ),
                       ),
                     ]),
@@ -87,24 +88,38 @@ class _TermsandPolicyPageState extends State<TermsandPolicyPage> {
                           BorderSide(width: 1, color: Color(0xFF908D8D)),
                         ),
                       ),
-                      child: _buildCheckboxWithText(
-                          '전체동의',
-                          _isChecked[0],
-                              (value) => _updateCheckState(0, value),
-                          Color(0xFF9932CC)),
+                      child: CheckboxWithText(
+                        text: '전체동의',
+                        isChecked: _isChecked[0],
+                        onChanged: (value) => _updateCheckState(0, value),
+                        textColor: Color(0xFF9932CC),
+                      ),
                     ),
                     const SizedBox(height: 13),
-                    _buildCheckboxWithText('[필수] 모구 이용 약관 동의', _isChecked[1],
-                            (value) => _updateCheckState(1, value), Colors.black),
-                    _buildCheckboxWithText('[필수] 개인정보 처리 방침 동의', _isChecked[2],
-                            (value) => _updateCheckState(2, value), Colors.black),
-                    _buildCheckboxWithText(
-                        '[필수] 개인정보 제 3자 제공 동의',
-                        _isChecked[3],
-                            (value) => _updateCheckState(3, value),
-                        Colors.black),
-                    _buildCheckboxWithText('[선택] 광고, 혜택 수신 동의', _isChecked[4],
-                            (value) => _updateCheckState(4, value), Colors.black),
+                    CheckboxWithText(
+                      text: '[필수] 모구 이용 약관 동의',
+                      isChecked: _isChecked[1],
+                      onChanged: (value) => _updateCheckState(1, value),
+                      textColor: Colors.black,
+                    ),
+                    CheckboxWithText(
+                      text: '[필수] 개인정보 처리 방침 동의',
+                      isChecked: _isChecked[2],
+                      onChanged: (value) => _updateCheckState(2, value),
+                      textColor: Colors.black,
+                    ),
+                    CheckboxWithText(
+                      text: '[필수] 개인정보 제 3자 제공 동의',
+                      isChecked: _isChecked[3],
+                      onChanged: (value) => _updateCheckState(3, value),
+                      textColor: Colors.black,
+                    ),
+                    CheckboxWithText(
+                      text: '[선택] 광고, 혜택 수신 동의',
+                      isChecked: _isChecked[4],
+                      onChanged: (value) => _updateCheckState(4, value),
+                      textColor: Colors.black,
+                    ),
                   ],
                 ),
               ),
@@ -127,7 +142,7 @@ class _TermsandPolicyPageState extends State<TermsandPolicyPage> {
                         pageBuilder: (context, animation, secondaryAnimation) =>
                             SignUpPage(),
                         transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                          const begin = Offset(1.0, 0.0); // 오른쪽에서 시작
+                          const begin = Offset(1.0, 0.0);
                           const end = Offset.zero;
                           const curve = Curves.ease;
 
@@ -158,46 +173,6 @@ class _TermsandPolicyPageState extends State<TermsandPolicyPage> {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildCheckboxWithText(String text, bool isChecked,
-      ValueChanged<bool?> onChanged, Color textColor) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 17.0),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 20,
-            height: 20,
-            child: Checkbox(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(4),
-              ),
-              checkColor: Color(0xFFB34FD1),
-              fillColor: MaterialStateProperty.resolveWith<Color?>(
-                    (Set<MaterialState> states) {
-                  return Colors.transparent; // 체크박스 배경색을 투명하게 설정
-                },
-              ),
-              value: isChecked,
-              onChanged: onChanged,
-            ),
-          ),
-          const SizedBox(width: 13),
-          Expanded(
-            child: Text(
-              text,
-              style: TextStyle(
-                color: textColor,
-                fontSize: 18,
-                fontFamily: 'Inter',
-                fontWeight: FontWeight.w400,
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
