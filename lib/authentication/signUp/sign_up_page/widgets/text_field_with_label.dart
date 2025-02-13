@@ -1,3 +1,4 @@
+// lib/authentication/signUp/widgets/text_field_with_label.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -108,8 +109,7 @@ class TextFieldWithLabel extends StatelessWidget {
                   if (value.length != 13) {
                     return '핸드폰 번호는 11자리여야 합니다';
                   }
-                  final phoneRegExp =
-                  RegExp(r'^\d{3}-\d{4}-\d{4}$');
+                  final phoneRegExp = RegExp(r'^\d{3}-\d{4}-\d{4}$');
                   if (!phoneRegExp.hasMatch(value)) {
                     return '유효한 핸드폰 번호를 입력해주세요';
                   }
