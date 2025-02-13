@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:mogu_app/user/home/post/post_report_page/post_report_page_viewModel.dart';
+import 'package:mogu_app/user/home/post/post_report_page/widgets/check_box_option.dart';
+import 'package:provider/provider.dart';
 
 class PostReportPage extends StatefulWidget {
   const PostReportPage({super.key});
@@ -8,7 +11,6 @@ class PostReportPage extends StatefulWidget {
 }
 
 class _PostReportPageState extends State<PostReportPage> {
-  String? _selectedReportType; // 선택된 신고 유형을 저장하는 변수
   final TextEditingController _reportController = TextEditingController();
 
   @override
@@ -19,6 +21,7 @@ class _PostReportPageState extends State<PostReportPage> {
 
   @override
   Widget build(BuildContext context) {
+    final viewModel = Provider.of<PostReportPageViewModel>(context);
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -49,11 +52,31 @@ class _PostReportPageState extends State<PostReportPage> {
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 16),
-              _buildCheckboxOption('그냥 신고'),
-              _buildCheckboxOption('허위 정보'),
-              _buildCheckboxOption('불쾌한 내용'),
-              _buildCheckboxOption('스팸'),
-              _buildCheckboxOption('기타'),
+              CheckBoxOption(
+                title: '그냥 신고',
+                getSelectedReportType: viewModel.getSelectedReportType,
+                setSelectedReportType: viewModel.setSelectedReportType,
+              ),
+              CheckBoxOption(
+                title: '허위 정보',
+                getSelectedReportType: viewModel.getSelectedReportType,
+                setSelectedReportType: viewModel.setSelectedReportType,
+              ),
+              CheckBoxOption(
+                title: '불쾌한 내용',
+                getSelectedReportType: viewModel.getSelectedReportType,
+                setSelectedReportType: viewModel.setSelectedReportType,
+              ),
+              CheckBoxOption(
+                title: '스팸',
+                getSelectedReportType: viewModel.getSelectedReportType,
+                setSelectedReportType: viewModel.setSelectedReportType,
+              ),
+              CheckBoxOption(
+                title: '기타',
+                getSelectedReportType: viewModel.getSelectedReportType,
+                setSelectedReportType: viewModel.setSelectedReportType,
+              ),
               SizedBox(height: 32),
               Text(
                 '신고 내용을 입력해주세요.',
@@ -101,7 +124,7 @@ class _PostReportPageState extends State<PostReportPage> {
                   onTap: () {
                     // 신고하기 버튼 눌렀을 때 동작을 정의하세요.
                     print('신고 내용: ${_reportController.text}');
-                    print('신고 종류: $_selectedReportType');
+                    print('신고 종류: ${viewModel.getSelectedReportType()}');
                   },
                   borderRadius: BorderRadius.circular(10),
                   splashColor: Colors.white.withOpacity(0.3),
@@ -126,20 +149,6 @@ class _PostReportPageState extends State<PostReportPage> {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildCheckboxOption(String title) {
-    return CheckboxListTile(
-      title: Text(title),
-      value: _selectedReportType == title,
-      onChanged: (bool? value) {
-        setState(() {
-          _selectedReportType = value! ? title : null;
-        });
-      },
-      activeColor: Color(0xFFB34FD1),
-      controlAffinity: ListTileControlAffinity.leading, // 체크박스를 왼쪽에 배치
     );
   }
 }

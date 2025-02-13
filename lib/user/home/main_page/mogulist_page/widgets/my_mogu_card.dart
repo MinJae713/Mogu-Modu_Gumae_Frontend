@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../post/post_detail_page.dart';
+import '../../../post/post_detail_page/post_detail_page.dart';
 
 class MyMoguCard extends StatefulWidget {
   final Map<String, dynamic> post;

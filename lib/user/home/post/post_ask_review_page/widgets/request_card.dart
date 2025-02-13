@@ -1,43 +1,29 @@
 import 'package:flutter/material.dart';
 
-import '../../../user/home/post/post_detail_page.dart';
-
-class PostAskReviewPage extends StatelessWidget {
-  const PostAskReviewPage({super.key});
+class RequestCard extends StatefulWidget {
+  final String name;
+  final String status;
+  final int history;
+  final String distance;
+  final String description;
+  const RequestCard({
+    super.key,
+    required this.name,
+    required this.status,
+    required this.history,
+    required this.distance,
+    required this.description
+  });
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          color: Color(0xFFE9F8FF),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment(0.68, -0.73),
-              end: Alignment(-0.68, 0.73),
-              colors: const [Color(0xFFFFA7E1), Color(0xB29322CC)],
-            ),
-          ),
-        ),
-      ),
-      body: ListView(
-        padding: EdgeInsets.all(16.0),
-        children: [
-          _buildRequestCard(context, '김찬', '매너인^^', 60, '1~2km', '방금 구매한 계란 5개씩 나누실 분...'),
-          _buildRequestCard(context, '모땡땡', '매너인^^', 60, '1~2km', '방금 구매한 계란 5개씩 나누실 분...'),
-          _buildRequestCard(context, '모땡땡', '매너인^^', 60, '1~2km', '방금 구매한 계란 5개씩 나누실 분...'),
-        ],
-      ),
-    );
+  State<StatefulWidget> createState() {
+    return _RequestCard();
   }
+}
 
-  Widget _buildRequestCard(BuildContext context, String name, String status, int history, String distance, String description) {
+class _RequestCard extends State<RequestCard> {
+  @override
+  Widget build(BuildContext context) {
     return Material(
       color: Colors.transparent, // 기본 배경색 투명
       borderRadius: BorderRadius.circular(10), // 오브젝트의 둥근 모서리
@@ -82,7 +68,7 @@ class PostAskReviewPage extends StatelessWidget {
                     SizedBox(width: 16.0),
                     Expanded(
                       child: Text(
-                        description,
+                        widget.description,
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ),
@@ -104,8 +90,8 @@ class PostAskReviewPage extends StatelessWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Text(status),
-                        Text('거래내역 $history회'),
+                        Text(widget.status),
+                        Text('거래내역 ${widget.history}회'),
                       ],
                     ),
                   ],

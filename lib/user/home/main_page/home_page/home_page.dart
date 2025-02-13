@@ -13,9 +13,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../service/location_service.dart';
 import '../../menu_page/menu_page.dart';
-import '../../notification_page.dart';
-import '../../post/post_create_page.dart';
-import '../../search_page.dart';
+import '../../notification_page/notification_page.dart';
+import '../../post/post_create_page/post_create_page.dart';
+import '../../search_page/search_page.dart';
 import '../bottom/home_page_bottom.dart';
 
 class HomeMainPage extends StatefulWidget {

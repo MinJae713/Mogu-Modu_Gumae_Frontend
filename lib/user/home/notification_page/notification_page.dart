@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:mogu_app/user/home/notification_page/notification_page_viewModel.dart';
 
-import 'package:mogu_app/user/home/post/post_ask_review_page.dart';
+import 'package:mogu_app/user/home/post/post_ask_review_page/post_ask_review_page.dart';
+import 'package:provider/provider.dart';
 
 class NotificationPage extends StatefulWidget {
-  const NotificationPage({super.key, required this.userInfo});
-
   final Map<String, dynamic> userInfo;
+
+  const NotificationPage({super.key, required this.userInfo});
 
   @override
   _NotificationPageState createState() => _NotificationPageState();
@@ -15,68 +15,31 @@ class NotificationPage extends StatefulWidget {
 
 class _NotificationPageState extends State<NotificationPage>
     with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-  List<Map<String, String>> notifications = [];
+  late NotificationPageViewModel viewModelForDispose;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-    findAlarmSignal();
+    final viewModel = Provider.of<NotificationPageViewModel>(context, listen: false);
+    viewModel.initViewModel(context, this, widget.userInfo);
+  }
+
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    viewModelForDispose = Provider.of<NotificationPageViewModel>(context, listen: false);
   }
 
   @override
   void dispose() {
-    _tabController.dispose();
+    viewModelForDispose.disposeViewModel();
     super.dispose();
-  }
-
-  Future<void> findAlarmSignal() async {
-    String url = 'http://10.0.2.2:8080/alarm/${widget.userInfo['userId']}';
-
-    try {
-      final response = await http.get(Uri.parse(url));
-
-      if (response.statusCode == 200) {
-        List<Map<String, dynamic>> data = List<Map<String, String>>.from(jsonDecode(response.body));
-        setState(() {
-          notifications = (data as List<dynamic>).map((item) {
-            return {
-              'title': item['content'] as String? ?? '알림 내용 없음',
-              'time': item['createdAt'] as String? ?? '시간 정보 없음',
-            };
-          }).toList();
-        });
-      } else {
-        _showErrorDialog('알림 불러오기 실패', '서버에서 오류가 발생했습니다.');
-      }
-    } catch (e) {
-      _showErrorDialog('오류', '서버와의 연결 오류가 발생했습니다.');
-    }
-  }
-
-  void _showErrorDialog(String title, String content) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(title),
-          content: Text(content),
-          actions: <Widget>[
-            TextButton(
-              child: Text('확인'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final viewModel = Provider.of<NotificationPageViewModel>(context);
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -109,7 +72,7 @@ class _NotificationPageState extends State<NotificationPage>
           child: Container(
             color: Colors.white,
             child: TabBar(
-              controller: _tabController,
+              controller: viewModel.tabController,
               labelColor: Color(0xFFB34FD1),
               unselectedLabelColor: Colors.grey,
               indicatorColor: Color(0xFFB34FD1),
@@ -128,10 +91,10 @@ class _NotificationPageState extends State<NotificationPage>
         ),
       ),
       body: TabBarView(
-        controller: _tabController,
+        controller: viewModel.tabController,
         children: [
           ListView.separated(
-            itemCount: notifications.length,
+            itemCount: viewModel.notifications.length,
             separatorBuilder: (context, index) => Divider(
               color: Colors.grey.shade300,
               thickness: 1,
@@ -168,8 +131,8 @@ class _NotificationPageState extends State<NotificationPage>
                     color: Colors.grey.shade300,
                     child: Icon(Icons.image, color: Colors.white),
                   ),
-                  title: Text(notifications[index]['title']!),
-                  subtitle: Text(notifications[index]['time']!),
+                  title: Text(viewModel.notifications[index]['title']!),
+                  subtitle: Text(viewModel.notifications[index]['time']!),
                   trailing: Icon(Icons.chevron_right),
                 ),
               );

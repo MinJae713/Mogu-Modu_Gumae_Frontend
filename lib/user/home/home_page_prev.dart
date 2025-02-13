@@ -7,14 +7,14 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:mogu_app/user/chat/chat_room_page.dart';
-import 'package:mogu_app/user/home/post/post_create_page.dart';
-import 'package:mogu_app/user/home/search_page.dart';
-import 'package:mogu_app/user/myPage/account_management_page.dart';
-import 'package:mogu_app/user/home/post/post_detail_page.dart';
-import 'package:mogu_app/user/myPage/setting_page.dart';
-import 'package:mogu_app/user/myPage/update_profile_page.dart';
+import 'package:mogu_app/user/home/post/post_create_page/post_create_page.dart';
+import 'package:mogu_app/user/home/search_page/search_page.dart';
+import 'package:mogu_app/user/myPage/account_management_page/account_management_page.dart';
+import 'package:mogu_app/user/home/post/post_detail_page/post_detail_page.dart';
+import 'package:mogu_app/user/myPage/setting_page/setting_page.dart';
+import 'package:mogu_app/user/myPage/update_profile_page/update_profile_page.dart';
 import 'package:mogu_app/user/home/menu_page/menu_page.dart';
-import 'package:mogu_app/user/home/notification_page.dart';
+import 'package:mogu_app/user/home/notification_page/notification_page.dart';
 
 import '../../service/location_service.dart';
 

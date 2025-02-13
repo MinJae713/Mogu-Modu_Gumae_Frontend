@@ -4,7 +4,7 @@ import 'package:mogu_app/admin/complaint/complaint_detail_page.dart';
 import 'package:mogu_app/admin/complaint/notice_create_page.dart';
 import 'package:mogu_app/admin/complaint/notice_detail_page.dart';
 
-import '../../user/home/post/post_detail_page.dart';
+import '../../user/home/post/post_detail_page/post_detail_page.dart';
 
 class HomePageFA extends StatefulWidget {
   const HomePageFA({super.key, required Map<String, dynamic> userInfo});

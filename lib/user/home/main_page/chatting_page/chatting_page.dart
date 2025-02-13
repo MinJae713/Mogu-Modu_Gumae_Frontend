@@ -1,10 +1,11 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:mogu_app/user/home/main_page/chatting_page/widgets/chat_filter_button.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../chat/chat_room_page.dart';
-import '../../notification_page.dart';
+import '../../notification_page/notification_page.dart';
 import '../bottom/home_page_bottom.dart';
 
 class ChattingPage extends StatefulWidget {
@@ -43,22 +44,14 @@ class _ChattingPageState extends State<ChattingPage> {
     });
   }
 
-  Widget _buildChatFilterButton(String label) {
-    return OutlinedButton(
-      onPressed: () {
-        setState(() {
-          _selectedChatFilter = label;
-        });
-      },
-      style: OutlinedButton.styleFrom(
-        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        backgroundColor: _selectedChatFilter == label ? Colors.grey.shade200 : Colors.white,
-        side: BorderSide(
-          color: _selectedChatFilter == label ? Colors.black : Colors.grey,
-        ),
-      ),
-      child: Text(label, style: TextStyle(fontSize: 14)),
-    );
+  String getChatFilter() {
+    return _selectedChatFilter;
+  }
+
+  void setChatFilter(String label) {
+    setState(() {
+      _selectedChatFilter = label;
+    });
   }
 
   @override
@@ -117,11 +110,26 @@ class _ChattingPageState extends State<ChattingPage> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      _buildChatFilterButton('전체'),
+                      ChatFilterButton(
+                        label: '전체',
+                        getChatFilter: getChatFilter,
+                        setChatFilter: setChatFilter
+                      ),
+                      // _buildChatFilterButton('전체'),
                       SizedBox(width: 8),
-                      _buildChatFilterButton('판매'),
+                      ChatFilterButton(
+                        label: '판매',
+                        getChatFilter: getChatFilter,
+                        setChatFilter: setChatFilter
+                      ),
+                      // _buildChatFilterButton('판매'),
                       SizedBox(width: 8),
-                      _buildChatFilterButton('구매'),
+                      ChatFilterButton(
+                        label: '구매',
+                        getChatFilter: getChatFilter,
+                        setChatFilter: setChatFilter
+                      ),
+                      // _buildChatFilterButton('구매')
                     ],
                   ),
                 ),

@@ -11,7 +11,14 @@ import 'package:mogu_app/user/chat/chat_room_page_viewModel.dart';
 import 'package:mogu_app/user/home/main_page/chatting_page/chatting_page.dart';
 import 'package:mogu_app/user/home/main_page/home_page/home_page.dart';
 import 'package:mogu_app/user/home/main_page/mogulist_page/mogulist_page.dart';
+import 'package:mogu_app/user/home/main_page/mogulist_page/mogulist_page_viewModel.dart';
 import 'package:mogu_app/user/home/main_page/my_page/my_page.dart';
+import 'package:mogu_app/user/home/main_page/my_page/my_page_viewModel.dart';
+import 'package:mogu_app/user/home/notification_page/notification_page_viewModel.dart';
+import 'package:mogu_app/user/home/post/post_create_page/post_create_page_viewModel.dart';
+import 'package:mogu_app/user/home/post/post_detail_page/post_detail_page_viewModel.dart';
+import 'package:mogu_app/user/home/post/post_report_page/post_report_page_viewModel.dart';
+import 'package:mogu_app/user/myPage/account_management_page/account_management_page_viewModel.dart';
 import 'package:provider/provider.dart';
 
 Future<void> main() async {
@@ -24,9 +31,32 @@ Future<void> main() async {
           create: (context) => LoadingPageViewModel()
         ),
         ChangeNotifierProvider(
-            create: (context) => ChatRoomPageViewModel()
+          create: (context) => ChatRoomPageViewModel()
         ),
-        // 대현닝 여기에 뷰모델 만들면 위처럼 넣어줍셔
+        ChangeNotifierProvider(
+          create: (context) => AccountManagementPageViewModel()
+        ),
+        ChangeNotifierProvider(
+          create: (context) => PostReportPageViewModel()
+        ),
+        ChangeNotifierProvider(
+          create: (context) => PostDetailPageViewModel()
+        ),
+        ChangeNotifierProvider(
+          create: (context) => PostCreatePageViewModel()
+        ),
+        ChangeNotifierProvider(
+          create: (context) => PostCreatePageViewModel()
+        ),
+        ChangeNotifierProvider(
+          create: (context) => NotificationPageViewModel()
+        ),
+        ChangeNotifierProvider(
+          create: (context) => MyPageViewModel()
+        ),
+        ChangeNotifierProvider(
+          create: (context) => MoguListPageViewModel()
+        ),
       ],
       child: const MoguApp(),
     ));
