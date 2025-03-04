@@ -22,6 +22,7 @@ class _ChattingPageState extends State<ChattingPage> {
   Widget build(BuildContext context) {
     final viewModel = Provider.of<ChattingPageViewModel>(context);
     viewModel.initUserInfo(context);
+    if (!viewModel.isInitialized) return Scaffold();
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -100,9 +101,9 @@ class _ChattingPageState extends State<ChattingPage> {
                 ),
                 Expanded(
                   child: ListView.builder(
-                    itemCount: viewModel.chatItems.length,
+                    itemCount: viewModel.model.chatItems.length,
                     itemBuilder: (context, index) {
-                      final chat = viewModel.chatItems[index];
+                      final chat = viewModel.model.chatItems[index];
                       return ListTile(
                         leading: Icon(
                           Icons.image,

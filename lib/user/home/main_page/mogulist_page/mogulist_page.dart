@@ -17,31 +17,26 @@ class MoguListPage extends StatefulWidget {
 }
 
 class _MoguListPageState extends State<MoguListPage> with SingleTickerProviderStateMixin {
-  late MoguListPageViewModel viewModelForDispose;
+  late TabController tabController;
 
   @override
   void initState() {
     super.initState();
     final viewModel = Provider.of<MoguListPageViewModel>(context, listen: false);
-    viewModel.initViewModel(context, this);
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    viewModelForDispose = Provider.of<MoguListPageViewModel>(context, listen: false);
+    viewModel.initViewModel(context);
+    tabController = TabController(length: 2, vsync: this);
   }
 
   @override
   void dispose() {
-    // _tabController.dispose();
-    viewModelForDispose.disposeViewModel();
+    tabController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final viewModel = Provider.of<MoguListPageViewModel>(context);
+    if (!viewModel.isInitialized) return const Scaffold();
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -65,7 +60,7 @@ class _MoguListPageState extends State<MoguListPage> with SingleTickerProviderSt
           child: Container(
             color: Colors.white,
             child: TabBar(
-              controller: viewModel.tabController,
+              controller: tabController,
               labelColor: Color(0xFFB34FD1),
               unselectedLabelColor: Colors.grey,
               indicatorColor: Color(0xFFB34FD1),
@@ -109,28 +104,27 @@ class _MoguListPageState extends State<MoguListPage> with SingleTickerProviderSt
         ],
       ),
       body: TabBarView(
-        controller: viewModel.tabController,
+        controller: tabController,
         children: [
           Column(
             children: [
               Expanded(
                 child: ListView.builder(
-                  itemCount: viewModel.posts.length,
+                  itemCount: viewModel.model.posts.length,
                   itemBuilder: (context, index) {
-                    return MoguHistoryCard(post: viewModel.posts[index],
-                        userUid: viewModel.userUid);
+                    return MoguHistoryCard(post: viewModel.model.posts[index],
+                        userUid: viewModel.model.userUid);
                   },
                 ),
               ),
             ],
           ),
           ListView.builder(
-            itemCount: viewModel.posts.length,
+            itemCount: viewModel.model.posts.length,
             itemBuilder: (context, index) {
-              // return _buildMyMoguCard(posts[index]);
               return MyMoguCard(
-                post: viewModel.posts[index],
-                userUid: viewModel.userUid
+                post: viewModel.model.posts[index],
+                userUid: viewModel.model.userUid
               );
             },
           ),

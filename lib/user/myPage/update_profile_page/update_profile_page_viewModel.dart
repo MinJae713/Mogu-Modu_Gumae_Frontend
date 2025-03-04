@@ -6,47 +6,43 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:mogu_app/user/myPage/update_profile_page/update_profile_page_model.dart';
 
 import '../../../service/location_service.dart';
 
 class UpdateProfilePageViewModel extends ChangeNotifier {
-  late String _nickname;
-  late String _profileImageUrl;
-  String? _address;
-  late double _latitude;
-  late double _longitude;
-  File? _newProfileImage;
-
-  String get nickname => _nickname;
-  String get profileImageUrl => _profileImageUrl;
-  String? get address => _address;
-  double get latitiude => _latitude;
-  double get longitude => _longitude;
-  File? get newProfileImage => _newProfileImage;
+  late UpdateProfilePageModel _model;
+  UpdateProfilePageModel get model => _model;
+  bool isInitialized = false;
 
   void initViewModel(
       String nickname,
       String profileImageUrl,
       double latitude,
       double longitude) {
-    _nickname = nickname;
-    _profileImageUrl = profileImageUrl;
-    _latitude = latitude;
-    _longitude = longitude;
-    _loadAddress();
+    _model = UpdateProfilePageModel.from(
+      nickname,
+      profileImageUrl,
+      latitude,
+      longitude
+    );
+    _loadAddress().then((value) {
+      isInitialized = true;
+      notifyListeners();
+    });
   }
 
   Future<void> _loadAddress() async {
-    final address = await LocationService().getAddressFromCoordinates(_latitude, _longitude);
-    _address = address;
+    final address = await LocationService().getAddressFromCoordinates(_model!.latitude, _model!.longitude);
+    _model.setAddress(address);
     notifyListeners();
   }
 
   Future<void> openMapAndSelectLocation(BuildContext context) async {
     final selectedLocation = await LocationService().openMapPage(context);
     if (selectedLocation != null) {
-      _latitude = selectedLocation.latitude;
-      _longitude = selectedLocation.longitude;
+      _model.setLatitude(selectedLocation.latitude);
+      _model.setLongitude(selectedLocation.longitude);
       notifyListeners();
       _loadAddress(); // 새 위치에 대한 주소를 로드
     }
@@ -57,7 +53,7 @@ class UpdateProfilePageViewModel extends ChangeNotifier {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
 
     if (image != null) {
-      _newProfileImage = File(image.path);
+      _model.setNewProfileImage(File(image.path));
       notifyListeners();
     }
   }
@@ -68,10 +64,10 @@ class UpdateProfilePageViewModel extends ChangeNotifier {
       double latitude,
       double longitude,
       String token) async {
-    if (_nickname == nickname &&
-        _newProfileImage == null &&
-        _latitude == latitude &&
-        _longitude == longitude) {
+    if (_model.nickname == nickname &&
+        _model.newProfileImage == null &&
+        _model.latitude == latitude &&
+        _model.longitude == longitude) {
       Navigator.pop(context);
       return;
     }
@@ -84,18 +80,18 @@ class UpdateProfilePageViewModel extends ChangeNotifier {
 
     // JSON 데이터를 문자열로 변환하여 필드로 추가하고, Content-Type을 application/json으로 설정
     request.fields['request'] = jsonEncode({
-      'nickname': _nickname,
-      'longitude': _longitude.toString(),
-      'latitude': _latitude.toString(),
+      'nickname': _model.nickname,
+      'longitude': _model.longitude.toString(),
+      'latitude': _model.latitude.toString(),
     });
     request.headers['Content-Type'] = 'application/json';
 
     // 이미지 파일이 있는 경우 파일 파트로 추가
-    if (_newProfileImage != null) {
+    if (_model.newProfileImage != null) {
       request.files.add(
         await http.MultipartFile.fromPath(
           'image',
-          _newProfileImage!.path,
+          _model.newProfileImage!.path,
           contentType: MediaType('image', 'jpeg'),
         ),
       );
@@ -114,10 +110,10 @@ class UpdateProfilePageViewModel extends ChangeNotifier {
 
         await _showSuccessDialog('성공', '프로필을 수정하였습니다.', context).then((_) {
           Navigator.pop(context, {
-            'nickname': _nickname,
+            'nickname': _model.nickname,
             'profileImage': newProfileImageUrl,
-            'longitude': _longitude,
-            'latitude': _latitude,
+            'longitude': _model.longitude,
+            'latitude': _model.latitude,
             'address': newAddress,
           });
         });
@@ -135,7 +131,7 @@ class UpdateProfilePageViewModel extends ChangeNotifier {
     showDialog(
       context: context,
       builder: (context) {
-        TextEditingController controller = TextEditingController(text: _nickname);
+        TextEditingController controller = TextEditingController(text: _model!.nickname);
         return AlertDialog(
           title: Text('닉네임 변경'),
           content: TextField(
@@ -151,10 +147,7 @@ class UpdateProfilePageViewModel extends ChangeNotifier {
             ),
             TextButton(
               onPressed: () {
-                // setState(() {
-                //   _nickname = controller.text;
-                // });
-                _nickname = controller.text;
+                _model.setNickname(controller.text);
                 notifyListeners();
                 Navigator.of(context).pop();
               },

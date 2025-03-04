@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import 'package:mogu_app/user/home/main_page/mogulist_page/mogulist_page_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../service/location_service.dart';
@@ -10,32 +11,18 @@ import '../common/common_methods.dart';
 
 class MoguListPageViewModel extends ChangeNotifier {
   late Map<String, dynamic> userInfo;
-  int userUid = 0;
-  late TabController tabController;
-  late String token;
-  late double longitude;
-  late double latitude;
-  final List<Map<String, dynamic>> posts = []; // 게시글 리스트 초기화
-  String selectedSortOption = '최신순';
+  late MoguListPageModel _model;
+  MoguListPageModel get model => _model;
+  bool isInitialized = false;
 
-  void initViewModel(BuildContext context,
-      SingleTickerProviderStateMixin vsync) {
-    tabController = TabController(length: 2, vsync: vsync);
+  void initViewModel(BuildContext context) {
     _getUserInfo(context).then((value) {
-      _initializeUserInfo();
+      _model = MoguListPageModel.fromJson(userInfo);
       findUserLevel(context);
       _findAllPost(context); // 초기화 시 모든 게시글을 불러옴
+      isInitialized = true;
+      notifyListeners();
     });
-  }
-
-  void disposeViewModel() {
-    tabController.dispose();
-  }
-
-  void _initializeUserInfo() {
-    token = userInfo['token'] ?? '';
-    longitude = userInfo['longitude']?.toDouble() ?? 0.0;
-    latitude = userInfo['latitude']?.toDouble() ?? 0.0;
   }
 
   Future<void> findUserLevel(BuildContext context) async {
@@ -45,18 +32,14 @@ class MoguListPageViewModel extends ChangeNotifier {
       final response = await http.get(
         Uri.parse(url),
         headers: <String, String>{
-          'Authorization': token,
+          'Authorization': _model.token,
           'Content-Type': 'application/json; charset=UTF-8',
         },
       );
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
-
-        userUid = data['userUid'];
-        // level = data['level']; 세개 여기선 안써유
-        // currentPurchaseCount = data['currentPurchaseCount'];
-        // needPurchaseCount = data['needPurchaseCount'];
+        _model.userUid = data['userUid'];
         notifyListeners();
       } else {
         CommonMethods.showErrorDialog(context, '오류', '서버에서 오류가 발생했습니다.');
@@ -73,7 +56,7 @@ class MoguListPageViewModel extends ChangeNotifier {
       final response = await http.get(
         Uri.parse(url),
         headers: {
-          'Authorization': token, // 토큰을 헤더에 추가
+          'Authorization': _model.token, // 토큰을 헤더에 추가
           'Content-Type': 'application/json', // 필요한 경우 헤더에 Content-Type도 추가
         },
       );
@@ -83,7 +66,7 @@ class MoguListPageViewModel extends ChangeNotifier {
         String decodedBody = utf8.decode(response.bodyBytes);
         List<dynamic> responseData = jsonDecode(decodedBody);
 
-        posts.clear(); // 기존 게시글 리스트 초기화
+        _model.posts.clear(); // 기존 게시글 리스트 초기화
         for (var item in responseData) {
           if (item['isHidden'] == true) {
             continue; // isHidden이 true이면 해당 아이템을 건너뜁니다.
@@ -99,14 +82,14 @@ class MoguListPageViewModel extends ChangeNotifier {
           LocationService().getAddressFromCoordinates(postLatitude, postLongitude)
               .then((address) {
             // 해당 게시물의 주소를 업데이트합니다.
-            int index = posts.indexWhere((p) => p['id'] == item['id']);
+            int index = _model.posts.indexWhere((p) => p['id'] == item['id']);
             if (index != -1) {
-              posts[index]['address'] = address;
+              _model.setPostAddress(index, address);
             }
             notifyListeners();
           });
 
-          posts.add({
+          _model.addPost({
             'id': item['id'] ?? 0, // ID 추가
             'category': item['category'] ?? '알 수 없음', // 카테고리 추가
             'isHidden': item['isHidden'] ?? false, // 숨김 상태 추가
@@ -145,12 +128,12 @@ class MoguListPageViewModel extends ChangeNotifier {
   }
 
   void _sortPosts() {
-    if (selectedSortOption == '최신순') {
-      posts.sort((a, b) => DateTime.parse(b['postDate']).compareTo(DateTime.parse(a['postDate'])));
-    } else if (selectedSortOption == '가까운 순') {
-      posts.sort((a, b) {
-        double distanceA = CommonMethods.calculateDistance(latitude, longitude, a['latitude'], a['longitude']);
-        double distanceB = CommonMethods.calculateDistance(latitude, longitude, b['latitude'], b['longitude']);
+    if (_model.selectedSortOption == '최신순') {
+      _model.posts.sort((a, b) => DateTime.parse(b['postDate']).compareTo(DateTime.parse(a['postDate'])));
+    } else if (_model.selectedSortOption == '가까운 순') {
+      _model.posts.sort((a, b) {
+        double distanceA = CommonMethods.calculateDistance(_model.latitude, _model.longitude, a['latitude'], a['longitude']);
+        double distanceB = CommonMethods.calculateDistance(_model.latitude, _model.longitude, b['latitude'], b['longitude']);
         return distanceA.compareTo(distanceB);
       });
     }

@@ -82,14 +82,14 @@ class _PostDetailPageState extends State<PostDetailPage> {
                     children: [
                       Icon(Icons.visibility, color: Colors.white),
                       SizedBox(width: 4),
-                      Text('${viewModel.model!.viewCount}', style: TextStyle(color: Colors.white)),
+                      Text('${viewModel.model.viewCount}', style: TextStyle(color: Colors.white)),
                       SizedBox(width: 16),
                       Icon(
-                        viewModel.model!.isHeartFilled ? Icons.favorite : Icons.favorite_border,
+                        viewModel.model.isHeartFilled ? Icons.favorite : Icons.favorite_border,
                         color: Colors.white,
                       ),
                       SizedBox(width: 4),
-                      Text('${viewModel.model!.likeCount}', style: TextStyle(color: Colors.white)),
+                      Text('${viewModel.model.likeCount}', style: TextStyle(color: Colors.white)),
                     ],
                   ),
                 ),
@@ -239,8 +239,8 @@ class _PostDetailPageState extends State<PostDetailPage> {
           children: [
             IconButton(
               icon: Icon(
-                viewModel.model!.isHeartFilled ? Icons.favorite : Icons.favorite_border,
-                color: viewModel.model!.isHeartFilled ? Colors.red : Color(0xFFFFD3F0),
+                viewModel.model.isHeartFilled ? Icons.favorite : Icons.favorite_border,
+                color: viewModel.model.isHeartFilled ? Colors.red : Color(0xFFFFD3F0),
               ),
               onPressed: viewModel.toggleHeart,
             ),

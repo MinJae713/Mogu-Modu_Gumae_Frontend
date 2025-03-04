@@ -1,20 +1,25 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:mogu_app/user/home/main_page/chatting_page/chatting_page_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ChattingPageViewModel extends ChangeNotifier {
   late Map<String, dynamic> userInfo;
-  final List<Map<String, String>> chatItems = List.generate(
-    5,
-        (index) => {
-      'title': '그럼 명지대학교에서 봐윰윰',
-      'time': '오후 9시 13분',
-    },
-  );
-  String _selectedChatFilter = '전체';
+  late ChattingPageModel _model;
+  ChattingPageModel get model => _model;
 
-  Future<void> initUserInfo(BuildContext context) async {
+  bool isInitialized = false;
+
+  void initUserInfo(BuildContext context) async {
+    getUserInfo(context).then((value) {
+      _model = ChattingPageModel();
+      isInitialized = true;
+      notifyListeners();
+    });
+  }
+
+  Future<void> getUserInfo(BuildContext context) async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     String? userJson = pref.getString('userJson');
     userJson == null ? showDialog(
@@ -24,16 +29,17 @@ class ChattingPageViewModel extends ChangeNotifier {
           title: Text('로그인 정보가 전달되지 않았습니다.'),
         );
       }
-    ) : userInfo = jsonDecode(userJson);
+    ) :
+    userInfo = jsonDecode(userJson);
     if (userJson != null) notifyListeners();
   }
 
   String getChatFilter() {
-    return _selectedChatFilter;
+    return _model.getChatFilter();
   }
 
   void setChatFilter(String label) {
-    _selectedChatFilter = label;
+    _model.setChatFilter(label);
     notifyListeners();
   }
 }

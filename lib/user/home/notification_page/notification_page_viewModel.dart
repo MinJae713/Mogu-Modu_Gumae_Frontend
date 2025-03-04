@@ -1,32 +1,36 @@
 import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 
 class NotificationPageViewModel extends ChangeNotifier {
-  late TabController _tabController;
+
   List<Map<String, String>> notifications = [];
 
-  TabController get tabController => _tabController;
-
   void initViewModel(BuildContext context,
-      SingleTickerProviderStateMixin vsync,
       Map<String, dynamic> userInfo) {
-    _tabController = TabController(length: 2, vsync: vsync);
     _findAlarmSignal(context, userInfo);
-  }
-
-  void disposeViewModel() {
-    _tabController.dispose();
   }
 
   Future<void> _findAlarmSignal(BuildContext context,
       Map<String, dynamic> userInfo) async {
+    // String url = 'http://${dotenv.env['SERVER_IP']}:${dotenv.env['SERVER_PORT']}/alarm/${userInfo['userId']}';
     String url = 'http://10.0.2.2:8080/alarm/${userInfo['userId']}';
 
     try {
       final response = await http.get(Uri.parse(url));
-
       if (response.statusCode == 200) {
+        print('바디-${response.body}');
+        /*
+        바디-
+        <!doctype html><html lang="en-US" dir="ltr">
+        <head>
+          <base href="https://accounts.google.com/v3/signin/">
+          <link rel="preconnect" href="//www.gstatic.com">
+          <meta name="referrer" content="origin">
+          <style data-href="https://www.gstatic.com/_/mss/boq-identity/_/ss/k=boq-identity.AccountsSignInUi.a3vNyRoRVPE.L.X.O/am=yQGTZLgGECj_IxBABQCAAIACAAAAAAAAAABgAAAgEwI/d=1/ed=1/rs=AOaEmlGTygNpU8XtXJJCHVk_ceiJpItYBw/m=identifierview,_b,_tp" nonce="Vi1OGavOdfRXEw4isRdO8A">@-webkit-keyframes quantumWizBoxInkSpread{0%{-webkit-transform:translate(-50%,-50%) scale(0.2);-webkit-transform:translate(-50%,-50%) scale(0.2);-ms-transform:translate(-50%,-50%) scale(0.2);-o-transform:translate(-50%,-50%) scale(0.2);transform:translate(-50%,-50%) scale(0.2)}to{-webkit-transform:translate(-50%,-50%) scale(2.2);-webkit-transform:translate(-50%,-50%) scale(2.2);-ms-transform:translate(-50%,-50%) scale(2.2);-o-transform:translate(-50%,-50%) scale(2.2);transform:translate(-50%,-50%) scale(2.2)}}@keyframes quantumWizBoxInkSpread{0%{-webkit-t
+         */
+        // reponse.body 찍어보면 저렇게 나옴 -> json 결과가 아니라서 Decode 못함 -> 그래서 에러가 생기는거 같네유
         List<Map<String, dynamic>> data = List<Map<String, String>>.from(jsonDecode(response.body));
         notifications = (data as List<dynamic>).map((item) {
           return {

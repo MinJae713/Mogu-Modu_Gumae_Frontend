@@ -15,25 +15,19 @@ class NotificationPage extends StatefulWidget {
 
 class _NotificationPageState extends State<NotificationPage>
     with SingleTickerProviderStateMixin {
-  late NotificationPageViewModel viewModelForDispose;
+  late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
     final viewModel = Provider.of<NotificationPageViewModel>(context, listen: false);
-    viewModel.initViewModel(context, this, widget.userInfo);
-  }
-
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    viewModelForDispose = Provider.of<NotificationPageViewModel>(context, listen: false);
+    viewModel.initViewModel(context, widget.userInfo);
+    _tabController = TabController(length: 2, vsync: this);
   }
 
   @override
   void dispose() {
-    viewModelForDispose.disposeViewModel();
+    _tabController.dispose();
     super.dispose();
   }
 
@@ -72,7 +66,7 @@ class _NotificationPageState extends State<NotificationPage>
           child: Container(
             color: Colors.white,
             child: TabBar(
-              controller: viewModel.tabController,
+              controller: _tabController,
               labelColor: Color(0xFFB34FD1),
               unselectedLabelColor: Colors.grey,
               indicatorColor: Color(0xFFB34FD1),
@@ -91,7 +85,7 @@ class _NotificationPageState extends State<NotificationPage>
         ),
       ),
       body: TabBarView(
-        controller: viewModel.tabController,
+        controller: _tabController,
         children: [
           ListView.separated(
             itemCount: viewModel.notifications.length,

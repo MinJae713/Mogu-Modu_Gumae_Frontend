@@ -32,12 +32,12 @@ class HomeMainPageViewModel extends ChangeNotifier {
     SharedPreferences pref = await SharedPreferences.getInstance();
     String? userJson = pref.getString('userJson');
     userJson == null ? showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: Text('로그인 정보가 전달되지 않았습니다.'),
-          );
-        }
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('로그인 정보가 전달되지 않았습니다.'),
+        );
+      }
     ) :
     userInfo = jsonDecode(userJson);
     if (userJson != null) notifyListeners();

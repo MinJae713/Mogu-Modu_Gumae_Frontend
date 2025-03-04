@@ -40,6 +40,7 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
   @override
   Widget build(BuildContext context) {
     final viewModel = Provider.of<UpdateProfilePageViewModel>(context);
+    if (!viewModel.isInitialized) return Scaffold();
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -70,7 +71,7 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: viewModel.address == null
+        child: viewModel.model!.address == null
             ? Center(child: CircularProgressIndicator())
             : Column(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -88,13 +89,13 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
                       child: CircleAvatar(
                         radius: 40,
                         backgroundColor: Colors.grey.shade300,
-                        backgroundImage: viewModel.newProfileImage != null
-                            ? FileImage(viewModel.newProfileImage!)
-                            : (viewModel.profileImageUrl.isNotEmpty
-                            ? NetworkImage(viewModel.profileImageUrl) as ImageProvider
+                        backgroundImage: viewModel.model!.newProfileImage != null
+                            ? FileImage(viewModel.model!.newProfileImage!)
+                            : (viewModel.model!.profileImageUrl.isNotEmpty
+                            ? NetworkImage(viewModel.model!.profileImageUrl) as ImageProvider
                             : null),
-                        child: viewModel.profileImageUrl.isEmpty
-                            && viewModel.newProfileImage == null
+                        child: viewModel.model!.profileImageUrl.isEmpty
+                            && viewModel.model!.newProfileImage == null
                             ? Icon(Icons.camera_alt, size: 40, color: Colors.white)
                             : null,
                       ),
@@ -146,7 +147,7 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
                             child: Align(
                               alignment: Alignment.centerRight,
                               child: Text(
-                                viewModel.nickname,
+                                viewModel.model!.nickname,
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w600,
@@ -169,7 +170,7 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
             ),
             SizedBox(height: 20),
             TextField(
-              controller: TextEditingController(text: viewModel.address),
+              controller: TextEditingController(text: viewModel.model!.address),
               readOnly: true,
               decoration: InputDecoration(
                 labelText: '주소',

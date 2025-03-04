@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:mogu_app/user/home/main_page/my_page/my_page_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../service/location_service.dart';
@@ -11,23 +12,9 @@ import '../common/common_methods.dart';
 
 class MyPageViewModel extends ChangeNotifier {
   late Map<String, dynamic> userInfo;
-  late String userId;
-  late String name;
-  late String nickname;
-  late String phone;
-  late int level;
-  late String manner;
-  late double longitude;
-  late double latitude;
-  late int distanceMeters;
-  late DateTime registerDate;
-  late String profileImage;
-  late String address = "Loading location...";
-  late String token;
-
-  int currentPurchaseCount = 0;
-  int needPurchaseCount = 0;
-  int savingCost = 0;
+  late MyPageModel _model;
+  MyPageModel get model => _model;
+  bool isInitialized = false;
 
   void initViewModel(BuildContext context) {
     _getUserInfo(context).then((value) {
@@ -35,6 +22,8 @@ class MyPageViewModel extends ChangeNotifier {
       _getAddress();
       _findUserLevel(context);
       _findUserSavingCost(context);
+      isInitialized = true;
+      notifyListeners();
     });
   }
 
@@ -54,27 +43,16 @@ class MyPageViewModel extends ChangeNotifier {
   }
 
   void _initializeUserInfo() {
-    userId = userInfo['userId'] ?? '';
-    token = userInfo['token'] ?? '';
-    name = userInfo['name'] ?? '';
-    nickname = userInfo['nickname'] ?? '';
-    phone = userInfo['phone'] ?? '';
-    level = userInfo['level'] ?? 0;
-    manner = userInfo['manner'] ?? '';
-    longitude = userInfo['longitude']?.toDouble() ?? 0.0;
-    latitude = userInfo['latitude']?.toDouble() ?? 0.0;
-    distanceMeters = userInfo['distanceMeters'] ?? 0;
-    registerDate = DateTime.parse(userInfo['registerDate'] ?? DateTime.now().toIso8601String());
-    profileImage = userInfo['profileImage'] ?? '';
+    _model = MyPageModel.fromJson(userInfo);
   }
 
   Future<void> getUpdatedUserInfo(BuildContext context) async {
-    final updatedUserInfo = await fetchUpdatedUserInfo(context, userId, token);
+    final updatedUserInfo = await fetchUpdatedUserInfo(context, model.userId, model.token);
     if (updatedUserInfo != null) {
-      nickname = updatedUserInfo['nickname'] ?? nickname;
-      profileImage = updatedUserInfo['profileImage'] ?? profileImage;
-      longitude = updatedUserInfo['longitude']?.toDouble() ?? longitude;
-      latitude = updatedUserInfo['latitude']?.toDouble() ?? latitude;
+      model.setNickname(updatedUserInfo['nickname'] ?? model.nickname);
+      model.setProfileImage(updatedUserInfo['profileImage'] ?? model.profileImage);
+      model.setLongitude(updatedUserInfo['longitude']?.toDouble() ?? model.longitude);
+      model.setLatitude(updatedUserInfo['latitude']?.toDouble() ?? model.latitude);
       notifyListeners();
       await _getAddress();
     } else {
@@ -112,11 +90,11 @@ class MyPageViewModel extends ChangeNotifier {
 
   Future<void> _getAddress() async {
     try {
-      String fetchedAddress = await LocationService().getAddressFromCoordinates(latitude, longitude);
-      address = fetchedAddress;
+      String fetchedAddress = await LocationService().getAddressFromCoordinates(model.latitude, model.longitude);
+      model.setAddress(fetchedAddress);
       notifyListeners();
     } catch (e) {
-      address = "주소를 가져올 수 없습니다.";
+      model.setAddress("주소를 가져올 수 없습니다.");
       notifyListeners();
     }
   }
@@ -128,7 +106,7 @@ class MyPageViewModel extends ChangeNotifier {
       final response = await http.get(
         Uri.parse(url),
         headers: <String, String>{
-          'Authorization': token,
+          'Authorization': model.token,
           'Content-Type': 'application/json; charset=UTF-8',
         },
       );
@@ -136,10 +114,9 @@ class MyPageViewModel extends ChangeNotifier {
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
 
-        level = data['level'];
-        currentPurchaseCount = data['currentPurchaseCount'];
-        needPurchaseCount = data['needPurchaseCount'];
-        // notifyListeners();
+        model.setLevel(data['level']);
+        model.setCurrentPurchaseCount(data['currentPurchaseCount']);
+        model.setNeedPurchaseCount(data['needPurchaseCount']);
       } else {
         CommonMethods.showErrorDialog(context, '오류', '서버에서 오류가 발생했습니다.');
       }
@@ -155,15 +132,14 @@ class MyPageViewModel extends ChangeNotifier {
       final response = await http.get(
         Uri.parse(url),
         headers: <String, String>{
-          'Authorization': token,
+          'Authorization': model.token,
           'Content-Type': 'application/json; charset=UTF-8',
         },
       );
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
-        savingCost = data['savingCost'];
-        // notifyListeners();
+        model.setSavingCost(data['savingCost']);
       } else {
         CommonMethods.showErrorDialog(context, '오류', '서버에서 오류가 발생했습니다.');
       }
