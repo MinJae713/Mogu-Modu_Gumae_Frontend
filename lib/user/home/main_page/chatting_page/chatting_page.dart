@@ -1,12 +1,11 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:mogu_app/user/home/main_page/chatting_page/widgets/chat_filter_button.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
 
 import '../../../chat/chat_room_page.dart';
 import '../../notification_page/notification_page.dart';
 import '../bottom/home_page_bottom.dart';
+import 'chatting_page_viewModel.dart';
 
 class ChattingPage extends StatefulWidget {
   const ChattingPage({super.key});
@@ -18,45 +17,12 @@ class ChattingPage extends StatefulWidget {
 }
 
 class _ChattingPageState extends State<ChattingPage> {
-  late Map<String, dynamic> userInfo;
-  final List<Map<String, String>> chatItems = List.generate(
-    6,
-        (index) => {
-      'title': '그럼 명지대학교에서 봐윰',
-      'time': '오후 9시 13분',
-    },
-  );
-  String _selectedChatFilter = '전체';
-
-  Future<void> initUserInfo() async {
-    SharedPreferences pref = await SharedPreferences.getInstance();
-    String? userJson = pref.getString('userJson');
-    userJson == null ? showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('로그인 정보가 전달되지 않았습니다.'),
-        );
-      }
-    ) :
-    setState(() {
-      userInfo = jsonDecode(userJson);
-    });
-  }
-
-  String getChatFilter() {
-    return _selectedChatFilter;
-  }
-
-  void setChatFilter(String label) {
-    setState(() {
-      _selectedChatFilter = label;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
-    initUserInfo();
+    final viewModel = Provider.of<ChattingPageViewModel>(context);
+    viewModel.initUserInfo(context);
+    if (!viewModel.isInitialized) return Scaffold();
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -83,7 +49,7 @@ class _ChattingPageState extends State<ChattingPage> {
               Navigator.push(
                 context,
                 PageRouteBuilder(
-                  pageBuilder: (context, animation, secondaryAnimation) => NotificationPage(userInfo: userInfo),
+                  pageBuilder: (context, animation, secondaryAnimation) => NotificationPage(userInfo: viewModel.userInfo),
                   transitionsBuilder: (context, animation, secondaryAnimation, child) {
                     const begin = Offset(1.0, 0.0);
                     const end = Offset.zero;
@@ -112,22 +78,22 @@ class _ChattingPageState extends State<ChattingPage> {
                     children: [
                       ChatFilterButton(
                         label: '전체',
-                        getChatFilter: getChatFilter,
-                        setChatFilter: setChatFilter
+                        getChatFilter: viewModel.getChatFilter,
+                        setChatFilter: viewModel.setChatFilter
                       ),
                       // _buildChatFilterButton('전체'),
                       SizedBox(width: 8),
                       ChatFilterButton(
                         label: '판매',
-                        getChatFilter: getChatFilter,
-                        setChatFilter: setChatFilter
+                        getChatFilter: viewModel.getChatFilter,
+                        setChatFilter: viewModel.setChatFilter
                       ),
                       // _buildChatFilterButton('판매'),
                       SizedBox(width: 8),
                       ChatFilterButton(
                         label: '구매',
-                        getChatFilter: getChatFilter,
-                        setChatFilter: setChatFilter
+                        getChatFilter: viewModel.getChatFilter,
+                        setChatFilter: viewModel.setChatFilter
                       ),
                       // _buildChatFilterButton('구매')
                     ],
@@ -135,9 +101,9 @@ class _ChattingPageState extends State<ChattingPage> {
                 ),
                 Expanded(
                   child: ListView.builder(
-                    itemCount: chatItems.length,
+                    itemCount: viewModel.model.chatItems.length,
                     itemBuilder: (context, index) {
-                      final chat = chatItems[index];
+                      final chat = viewModel.model.chatItems[index];
                       return ListTile(
                         leading: Icon(
                           Icons.image,

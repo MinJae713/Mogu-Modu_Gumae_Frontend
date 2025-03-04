@@ -28,6 +28,7 @@ class _MyPageState extends State<MyPage> {
   @override
   Widget build(BuildContext context) {
     final viewModel = Provider.of<MyPageViewModel>(context);
+    if (!viewModel.isInitialized) return const Scaffold();
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -118,10 +119,10 @@ class _MyPageState extends State<MyPage> {
                       child: CircleAvatar(
                         radius: 40,
                         backgroundColor: Colors.grey.shade300,
-                        backgroundImage: viewModel.profileImage.isNotEmpty
-                            ? NetworkImage(viewModel.profileImage)
+                        backgroundImage: viewModel.model.profileImage.isNotEmpty
+                            ? NetworkImage(viewModel.model.profileImage)
                             : null,
-                        child: viewModel.profileImage.isEmpty
+                        child: viewModel.model.profileImage.isEmpty
                             ? Icon(Icons.person, size: 50, color: Colors.white)
                             : null,
                       ),
@@ -133,7 +134,7 @@ class _MyPageState extends State<MyPage> {
                       textBaseline: TextBaseline.alphabetic,
                       children: [
                         Text(
-                          'Lv.${viewModel.level}',
+                          'Lv.${viewModel.model.level}',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -142,7 +143,7 @@ class _MyPageState extends State<MyPage> {
                         ),
                         SizedBox(width: 15), // 간격을 자연스럽게 조절
                         Text(
-                          viewModel.nickname,
+                          viewModel.model.nickname,
                           style: TextStyle(
                             fontSize: 24, // 닉네임을 강조하기 위해 더 크게 설정
                             fontWeight: FontWeight.bold,
@@ -156,12 +157,12 @@ class _MyPageState extends State<MyPage> {
                           context,
                           MaterialPageRoute(
                             builder: (context) => UpdateProfilePage(
-                              userId: viewModel.userId,
-                              nickname: viewModel.nickname,
-                              profileImage: viewModel.profileImage,
-                              longitude: viewModel.longitude,
-                              latitude: viewModel.latitude,
-                              token: viewModel.token,
+                              userId: viewModel.model.userId,
+                              nickname: viewModel.model.nickname,
+                              profileImage: viewModel.model.profileImage,
+                              longitude: viewModel.model.longitude,
+                              latitude: viewModel.model.latitude,
+                              token: viewModel.model.token,
                             ),
                           ),
                         );
@@ -187,13 +188,13 @@ class _MyPageState extends State<MyPage> {
                             Text('현재 거래 횟수', style: TextStyle(fontSize: 16, color: Color(0xFFB34FD1))),
                             SizedBox(height: 10),
                             Text(
-                              '${viewModel.currentPurchaseCount} / ${viewModel.needPurchaseCount}',
+                              '${viewModel.model.currentPurchaseCount} / ${viewModel.model.needPurchaseCount}',
                               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                             ),
                             SizedBox(height: 4),
                             Text(
-                              '다음 레벨까지 ${(viewModel.needPurchaseCount -
-                                  viewModel.currentPurchaseCount).abs()}번 남음',
+                              '다음 레벨까지 ${(viewModel.model.needPurchaseCount -
+                                  viewModel.model.currentPurchaseCount).abs()}번 남음',
                               style: TextStyle(fontSize: 14, color: Colors.grey),
                             ),
                           ],
@@ -203,7 +204,7 @@ class _MyPageState extends State<MyPage> {
                             Text('매너도', style: TextStyle(fontSize: 16, color: Color(0xFFB34FD1))),
                             SizedBox(height: 10),
                             Text(
-                              viewModel.manner,
+                              viewModel.model.manner,
                               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                             ),
                           ],
@@ -214,19 +215,19 @@ class _MyPageState extends State<MyPage> {
                     ListTile(
                       leading: Icon(Icons.location_on, color: Color(0xFFB34FD1)),
                       title: Text('나의 위치', style: TextStyle(color: Color(0xFFB34FD1))),
-                      subtitle: Text(viewModel.address),
+                      subtitle: Text(viewModel.model.address),
                     ),
                     ListTile(
                       leading: Icon(Icons.calendar_today, color: Color(0xFFB34FD1)),
                       title: Text('가입일', style: TextStyle(color: Color(0xFFB34FD1))),
-                      subtitle: Text('${viewModel.registerDate.year}/${viewModel.registerDate.month}/${viewModel.registerDate.day}',
+                      subtitle: Text('${viewModel.model.registerDate.year}/${viewModel.model.registerDate.month}/${viewModel.model.registerDate.day}',
                           style: TextStyle(fontSize: 18)),
                     ),
                     ListTile(
                       leading: Icon(Icons.money, color: Color(0xFFB34FD1)),
                       title: Text('모구로 아낌비용', style: TextStyle(color: Color(0xFFB34FD1))),
                       subtitle: Text(
-                        '${viewModel.formatCurrency(viewModel.savingCost)}원',
+                        '${viewModel.formatCurrency(viewModel.model.savingCost)}원',
                         style: TextStyle(fontSize: 18),
                       ),
                     ),

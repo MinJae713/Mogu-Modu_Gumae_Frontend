@@ -66,14 +66,14 @@ class _AccountManagementPage extends State<AccountManagementPage> {
             children: [
               InfoRow(
                 title: '아이디',
-                value: viewModel.model!.userId,
+                value: viewModel.model.userId,
                 showPasswordChangeDialog: () {
                   viewModel.showPasswordChangeDialog(context, widget.userInfo);
                 }
               ),
               InfoRow(
                 title: '비밀번호',
-                value: viewModel.model!.password,
+                value: viewModel.model.password,
                 showPasswordChangeDialog: () {
                   viewModel.showPasswordChangeDialog(context, widget.userInfo);
                 },
@@ -81,14 +81,14 @@ class _AccountManagementPage extends State<AccountManagementPage> {
               ),
               InfoRow(
                 title: '이름',
-                value: viewModel.model!.name,
+                value: viewModel.model.name,
                 showPasswordChangeDialog: () {
                   viewModel.showPasswordChangeDialog(context, widget.userInfo);
                 }
               ),
               InfoRow(
                 title: '전화번호',
-                value: viewModel.model!.phone,
+                value: viewModel.model.phone,
                 showPasswordChangeDialog: () {
                   viewModel.showPasswordChangeDialog(context, widget.userInfo);
                 }

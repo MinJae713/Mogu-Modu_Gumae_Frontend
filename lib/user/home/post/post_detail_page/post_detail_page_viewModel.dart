@@ -4,16 +4,16 @@ import 'package:mogu_app/user/home/post/post_detail_page/post_detail_page_model.
 import '../post_report_page/post_report_page.dart';
 
 class PostDetailPageViewModel extends ChangeNotifier {
-  PostDetailPageModel? _model;
+  late PostDetailPageModel _model;
 
-  PostDetailPageModel? get model => _model;
+  PostDetailPageModel get model => _model;
 
   void initViewModel(Map<String, dynamic> post) {
     _model = PostDetailPageModel.fromJson(post);
   }
 
   void toggleHeart() {
-    model!.toggleHeart();
+    model.toggleHeart();
     notifyListeners();
   }
 

@@ -8,8 +8,8 @@ import 'package:mogu_app/user/myPage/account_management_page/account_management_
 import '../../../intro/loading_page/loading_page.dart';
 
 class AccountManagementPageViewModel extends ChangeNotifier {
-  AccountManagementPageModel? _model;
-  AccountManagementPageModel? get model => _model;
+  late AccountManagementPageModel _model;
+  AccountManagementPageModel get model => _model;
 
   void initViewModel(Map<String, dynamic> userInfo) {
     _model = AccountManagementPageModel.fromJson(userInfo);
