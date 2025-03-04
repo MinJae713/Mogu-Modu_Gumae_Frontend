@@ -9,7 +9,9 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:mogu_app/intro/loading_page/loading_page_viewModel.dart';
 import 'package:mogu_app/user/chat/chat_room_page_viewModel.dart';
 import 'package:mogu_app/user/home/main_page/chatting_page/chatting_page.dart';
+import 'package:mogu_app/user/home/main_page/chatting_page/chatting_page_viewModel.dart';
 import 'package:mogu_app/user/home/main_page/home_page/home_page.dart';
+import 'package:mogu_app/user/home/main_page/home_page/home_page_viewModel.dart';
 import 'package:mogu_app/user/home/main_page/mogulist_page/mogulist_page.dart';
 import 'package:mogu_app/user/home/main_page/mogulist_page/mogulist_page_viewModel.dart';
 import 'package:mogu_app/user/home/main_page/my_page/my_page.dart';
@@ -19,6 +21,7 @@ import 'package:mogu_app/user/home/post/post_create_page/post_create_page_viewMo
 import 'package:mogu_app/user/home/post/post_detail_page/post_detail_page_viewModel.dart';
 import 'package:mogu_app/user/home/post/post_report_page/post_report_page_viewModel.dart';
 import 'package:mogu_app/user/myPage/account_management_page/account_management_page_viewModel.dart';
+import 'package:mogu_app/user/myPage/update_profile_page/update_profile_page_viewModel.dart';
 import 'package:provider/provider.dart';
 
 Future<void> main() async {
@@ -56,6 +59,15 @@ Future<void> main() async {
         ),
         ChangeNotifierProvider(
           create: (context) => MoguListPageViewModel()
+        ),
+        ChangeNotifierProvider(
+          create: (context) => ChattingPageViewModel()
+        ),
+        ChangeNotifierProvider(
+          create: (context) => UpdateProfilePageViewModel()
+        ),
+        ChangeNotifierProvider(
+          create: (context) => HomeMainPageViewModel()
         ),
       ],
       child: const MoguApp(),
