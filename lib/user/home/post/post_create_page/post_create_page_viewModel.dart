@@ -7,64 +7,27 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_naver_map/flutter_naver_map.dart';
-import 'package:mogu_app/service/location_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
+import 'package:mogu_app/user/home/post/post_create_page/post_create_page_model.dart';
 
 class PostCreatePageViewModel extends ChangeNotifier {
-  final int maxImages = 3;
-  final List<Uint8List> _selectedImages = [];
-  final TextEditingController priceController = TextEditingController();
-  final TextEditingController personController = TextEditingController();
-  final TextEditingController customPriceController = TextEditingController();
-  final TextEditingController titleController = TextEditingController();
-  final TextEditingController contentController = TextEditingController();
 
-  String chiefPrice = '0 원';
-  String selectedCategory = '식료품';
-  String purchaseStatus = '구매 예정';
-  DateTime selectedDate = DateTime.now();
-  String meetingPlace = '';
-  String meetingPlaceRoadName = '';
-
-  bool isShareConditionEqual = true;
-  bool isTitleValid = true;
-  bool isContentValid = true;
-  bool isPriceValid = true;
-  bool isPersonValid = true;
-  bool isCustomPriceValid = true;
-  bool isLocationValid = true;
-  bool isDiscountValid = true;
-  bool showDiscountError = false;
-  bool showCustomPriceError = false;
-
-  final LocationService _locationService = LocationService();
-  NLatLng? selectedLocation;
-
-  // FocusNodes 추가
-  final FocusNode _titleFocusNode = FocusNode();
-  final FocusNode _contentFocusNode = FocusNode();
-  final FocusNode _priceFocusNode = FocusNode();
-  final FocusNode _customerPriceFocusNode = FocusNode();
-  final FocusNode _personFocusNode = FocusNode();
-
-  List<Uint8List> get selectedImages => _selectedImages;
-  FocusNode get titleFocusNode => _titleFocusNode;
-  FocusNode get contentFocusNode => _contentFocusNode;
-  FocusNode get priceFocusNode => _priceFocusNode;
-  FocusNode get customerPriceFocusNode => _customerPriceFocusNode;
-  FocusNode get personFocusNode => _personFocusNode;
+  late PostCreatePageModel _model;
+  PostCreatePageModel get model => _model;
+  bool isInitialized = false;
 
   void initViewModel() {
-    priceController.addListener(_updatePrice);
-    personController.addListener(_updatePerson);
-    customPriceController.addListener(_updateCustomPrice);
-    _initCurrentLocation();
+    _model = PostCreatePageModel(_calculateDiscount);
+    _initCurrentLocation().then((value) {
+      isInitialized = true;
+      notifyListeners();
+    });
   }
 
   Future<void> _initCurrentLocation() async {
     try {
-      await _locationService.initCurrentLocation();
+      await _model.locationService.initCurrentLocation();
       notifyListeners();
     } catch (e) {
       print('위치 정보를 초기화하는 중 오류 발생: $e');
@@ -79,23 +42,23 @@ class PostCreatePageViewModel extends ChangeNotifier {
       request.headers['Authorization'] = userInfo['token'];
 
       request.fields['request'] = jsonEncode({
-        "title": titleController.text,
-        "category": _getCategoryRequestValue(selectedCategory),
-        "content": contentController.text,
-        "chiefPrice": chiefPrice.replaceAll(RegExp(r'[^\d]'), ''),
-        "originalPrice": priceController.text.replaceAll(RegExp(r'[^\d]'), ''),
-        "purchaseDate": DateFormat('yyyy-MM-dd').format(selectedDate),
-        "purchaseState": (purchaseStatus == '구매 완료').toString(),
-        "userCount": personController.text.replaceAll(RegExp(r'[^\d]'), ''),
-        "longitude": selectedLocation?.longitude.toString() ?? '0.0',
-        "latitude": selectedLocation?.latitude.toString() ?? '0.0',
-        "shareCondition": isShareConditionEqual.toString(),
-        if (!isShareConditionEqual)
-          "perPrice": customPriceController.text.replaceAll(RegExp(r'[^\d]'), ''),
+        "title": _model.titleController.text,
+        "category": _getCategoryRequestValue(_model.selectedCategory),
+        "content": _model.contentController.text,
+        "chiefPrice": _model.chiefPrice.replaceAll(RegExp(r'[^\d]'), ''),
+        "originalPrice": _model.priceController.text.replaceAll(RegExp(r'[^\d]'), ''),
+        "purchaseDate": DateFormat('yyyy-MM-dd').format(_model.selectedDate),
+        "purchaseState": (_model.purchaseStatus == '구매 완료').toString(),
+        "userCount": _model.personController.text.replaceAll(RegExp(r'[^\d]'), ''),
+        "longitude": _model.selectedLocation?.longitude.toString() ?? '0.0',
+        "latitude": _model.selectedLocation?.latitude.toString() ?? '0.0',
+        "shareCondition": _model.isShareConditionEqual.toString(),
+        if (!_model.isShareConditionEqual)
+          "perPrice": _model.customPriceController.text.replaceAll(RegExp(r'[^\d]'), ''),
       });
 
-      if (_selectedImages.isNotEmpty) {
-        for (var image in _selectedImages) {
+      if (_model.selectedImages.isNotEmpty) {
+        for (var image in _model.selectedImages) {
           request.files.add(
             http.MultipartFile.fromBytes(
               'multipartFileList',
@@ -151,27 +114,27 @@ class PostCreatePageViewModel extends ChangeNotifier {
   }
 
   bool _validateInputs() {
-    final originalPrice = int.tryParse(priceController.text.replaceAll(RegExp(r'[^\d]'), '')) ?? 0;
-    final discountPrice = int.tryParse(chiefPrice.replaceAll(RegExp(r'[^\d]'), '')) ?? 0;
+    final originalPrice = int.tryParse(_model.priceController.text.replaceAll(RegExp(r'[^\d]'), '')) ?? 0;
+    final discountPrice = int.tryParse(_model.chiefPrice.replaceAll(RegExp(r'[^\d]'), '')) ?? 0;
 
-    isTitleValid = titleController.text.isNotEmpty;
-    isContentValid = contentController.text.isNotEmpty;
-    isPriceValid = priceController.text.isNotEmpty;
-    isPersonValid = personController.text.isNotEmpty;
-    isCustomPriceValid = isShareConditionEqual || customPriceController.text.isNotEmpty;
-    isLocationValid = meetingPlace.isNotEmpty;
-    isDiscountValid = originalPrice > discountPrice;
-    showDiscountError = originalPrice > 0 && discountPrice > 0 && !isDiscountValid;
-    showCustomPriceError = !isShareConditionEqual && !isCustomPriceValid;
+    _model.setTitleValid(_model.titleController.text.isNotEmpty);
+    _model.setContentValid(_model.contentController.text.isNotEmpty);
+    _model.setPriceValid(_model.priceController.text.isNotEmpty);
+    _model.setPersonValid(_model.personController.text.isNotEmpty);
+    _model.setCustomPriceValid(_model.isShareConditionEqual || _model.customPriceController.text.isNotEmpty);
+    _model.setLocationValid(_model.meetingPlace.isNotEmpty);
+    _model.setDiscountValid(originalPrice > discountPrice);
+    _model.setDiscountError(originalPrice > 0 && discountPrice > 0 && !_model.isDiscountValid);
+    _model.setCustomPriceError(!_model.isShareConditionEqual && !_model.isCustomPriceValid);
     notifyListeners();
 
-    return isTitleValid &&
-        isContentValid &&
-        isPriceValid &&
-        isPersonValid &&
-        isLocationValid &&
-        (isShareConditionEqual || isCustomPriceValid) &&
-        isDiscountValid;
+    return _model.isTitleValid &&
+        _model.isContentValid &&
+        _model.isPriceValid &&
+        _model.isPersonValid &&
+        _model.isLocationValid &&
+        (_model.isShareConditionEqual || _model.isCustomPriceValid) &&
+        _model.isDiscountValid;
   }
 
   Future<void> _showSuccessDialog(BuildContext context,
@@ -223,88 +186,40 @@ class PostCreatePageViewModel extends ChangeNotifier {
     );
   }
 
-  void _updatePrice() {
-    final text = priceController.text.replaceAll(RegExp(r'[^\d]'), '');
-    if (text.isNotEmpty) {
-      priceController.value = priceController.value.copyWith(
-        text: '${NumberFormat('#,###').format(int.parse(text))} 원',
-        selection: TextSelection.collapsed(offset: priceController.text.length - 2),
-      );
-    } else {
-      priceController.value = priceController.value.copyWith(
-        text: '',
-        selection: TextSelection.collapsed(offset: 0),
-      );
-    }
-    _calculateDiscount();
-  }
-
-  void _updatePerson() {
-    final text = personController.text.replaceAll(RegExp(r'[^\d]'), '');
-    if (text.isNotEmpty) {
-      personController.value = personController.value.copyWith(
-        text: '$text 명',
-        selection: TextSelection.collapsed(offset: personController.text.length - 2),
-      );
-    } else {
-      personController.value = personController.value.copyWith(
-        text: '',
-        selection: TextSelection.collapsed(offset: 0),
-      );
-    }
-    _calculateDiscount();
-  }
-
-  void _updateCustomPrice() {
-    final text = customPriceController.text.replaceAll(RegExp(r'[^\d]'), '');
-    if (text.isNotEmpty) {
-      customPriceController.value = customPriceController.value.copyWith(
-        text: '${NumberFormat('#,###').format(int.parse(text))} 원',
-        selection: TextSelection.collapsed(offset: customPriceController.text.length - 2),
-      );
-    } else {
-      customPriceController.value = customPriceController.value.copyWith(
-        text: '',
-        selection: TextSelection.collapsed(offset: 0),
-      );
-    }
-    _calculateDiscount();
-  }
-
   void _calculateDiscount() {
-    final priceText = priceController.text.replaceAll(RegExp(r'[^\d]'), '');
-    final personText = personController.text.replaceAll(RegExp(r'[^\d]'), '');
-    final customPriceText = customPriceController.text.replaceAll(RegExp(r'[^\d]'), '');
+    final priceText = _model.priceController.text.replaceAll(RegExp(r'[^\d]'), '');
+    final personText = _model.personController.text.replaceAll(RegExp(r'[^\d]'), '');
+    final customPriceText = _model.customPriceController.text.replaceAll(RegExp(r'[^\d]'), '');
 
     if (priceText.isNotEmpty && personText.isNotEmpty) {
       final price = int.tryParse(priceText) ?? 0;
       final person = int.tryParse(personText) ?? 1;
       final customPrice = int.tryParse(customPriceText) ?? 0;
 
-      if (isShareConditionEqual) {
+      if (_model.isShareConditionEqual) {
         final discount = person > 0 ? (price / person).floor() : 0;
-        chiefPrice = '${NumberFormat('#,###').format(discount)} 원';
+        _model.setChiefPrice('${NumberFormat('#,###').format(discount)} 원');
         notifyListeners();
       } else {
         final calculatedDiscount = price - customPrice * (person - 1);
         if (calculatedDiscount >= 0) {
-          chiefPrice = '${NumberFormat('#,###').format(calculatedDiscount)} 원';
+          _model.setChiefPrice('${NumberFormat('#,###').format(calculatedDiscount)} 원');
           notifyListeners();
         } else {
-          chiefPrice = '${NumberFormat('#,###').format(customPrice)} 원';
+          _model.setChiefPrice('${NumberFormat('#,###').format(customPrice)} 원');
           notifyListeners();
         }
       }
     } else {
-      chiefPrice = '0 원';
+      _model.setChiefPrice('0 원');
       notifyListeners();
     }
   }
 
   Future<void> pickImage(BuildContext context) async {
-    if (_selectedImages.length >= maxImages) {
+    if (_model.selectedImages.length >= _model.maxImages) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('최대 $maxImages개의 이미지만 업로드할 수 있습니다.')),
+        SnackBar(content: Text('최대 ${_model.maxImages}개의 이미지만 업로드할 수 있습니다.')),
       );
       return;
     }
@@ -318,7 +233,7 @@ class PostCreatePageViewModel extends ChangeNotifier {
       File file = File(result.files.single.path!);
       Uint8List fileBytes = await file.readAsBytes();
 
-      _selectedImages.add(fileBytes);
+      _model.selectedImages.add(fileBytes);
       notifyListeners();
     }
   }
@@ -371,7 +286,7 @@ class PostCreatePageViewModel extends ChangeNotifier {
     );
 
     if (category != null) {
-      selectedCategory = category;
+      _model.setSelectedCategory(category);
       notifyListeners();
     }
   }
@@ -396,7 +311,7 @@ class PostCreatePageViewModel extends ChangeNotifier {
     );
 
     if (status != null) {
-      purchaseStatus = status;
+      _model.setPurchaseStatus(status);
       notifyListeners();
     }
   }
@@ -404,37 +319,34 @@ class PostCreatePageViewModel extends ChangeNotifier {
   Future<void> selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: selectedDate,
+      initialDate: _model.selectedDate,
       firstDate: DateTime.now(),
       lastDate: DateTime(2101),
     );
-    if (picked != null && picked != selectedDate) {
-      selectedDate = picked;
+    if (picked != null && picked != _model.selectedDate) {
+      _model.setSelectedDate(picked);
       notifyListeners();
     }
   }
 
   Future<void> selectLocation(BuildContext context) async {
-    final NLatLng? location = await _locationService.openMapPage(context);
+    final NLatLng? location = await _model.locationService.openMapPage(context);
     if (location != null) {
-      String selectedAddress = await _locationService.getAddressFromCoordinates(
+      String selectedAddress = await _model.locationService.getAddressFromCoordinates(
           location.latitude, location.longitude);
-      meetingPlace = selectedAddress;
-      meetingPlaceRoadName = selectedAddress;
-      selectedLocation = location;
-      isLocationValid = true;
+      _model.setMeetingPlace(selectedAddress);
+      _model.setMeetingPlaceRoadName(selectedAddress);
+      _model.setSelectedLocation(location);
+      _model.setLocationValid(true);
       notifyListeners();
     }
   }
 
   void toggleShareCondition(bool isEqual) {
     // true는 균등, false는 커스텀
-    isShareConditionEqual = isEqual;
-    showCustomPriceError = false;
+    _model.setShareConditionEqual(isEqual);
+    _model.setCustomPriceError(false);
     _calculateDiscount();
     notifyListeners();
-  }
-  bool getShareConditionEqual() {
-    return isShareConditionEqual;
   }
 }

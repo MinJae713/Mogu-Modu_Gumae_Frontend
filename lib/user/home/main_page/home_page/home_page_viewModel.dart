@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:mogu_app/user/home/main_page/home_page/home_page_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../service/location_service.dart';
@@ -12,21 +13,10 @@ import '../common/common_methods.dart';
 class HomeMainPageViewModel extends ChangeNotifier {
   late Map<String, dynamic> userInfo;
 
-  BannerAd? _bannerAd;
-  bool _isAdLoaded = false;
-  String _selectedSortOption = '최신순';
-  final List<String> _sortOptions = ['최신순', '가까운 순'];
-
-  BannerAd? get bannerAd => _bannerAd;
-  bool get isAdLoaded => _isAdLoaded;
-  String get selectedSortOption => _selectedSortOption;
-  List<String> get sortOptions => _sortOptions;
-
-  late double longitude;
-  late double latitude;
-  late String token;
-  int userUid = 0;
-  List<Map<String, dynamic>> posts = []; // 게시글 리스트 초기화
+  BannerAd? bannerAd;
+  late HomePageModel _model;
+  HomePageModel get model => _model;
+  bool isInitialized = false;
 
   Future<void> getUserInfo(BuildContext context) async {
     SharedPreferences pref = await SharedPreferences.getInstance();
@@ -46,17 +36,13 @@ class HomeMainPageViewModel extends ChangeNotifier {
   void initViewModel(BuildContext context) {
     loadBannerAd();
     getUserInfo(context).then((value) {
-      initializeUserInfo();
+      _model = HomePageModel.fromJson(userInfo);
       findUserLevel(context);
       findAllPost(context);
       // 초기화 시 모든 게시글을 불러옴
+      isInitialized = true;
+      notifyListeners();
     });
-  }
-
-  void initializeUserInfo() {
-    token = userInfo['token'] ?? '';
-    longitude = userInfo['longitude']?.toDouble() ?? 0.0;
-    latitude = userInfo['latitude']?.toDouble() ?? 0.0;
   }
 
   Future<void> findUserLevel(BuildContext context) async {
@@ -66,14 +52,14 @@ class HomeMainPageViewModel extends ChangeNotifier {
       final response = await http.get(
         Uri.parse(url),
         headers: <String, String>{
-          'Authorization': token,
+          'Authorization': _model.token,
           'Content-Type': 'application/json; charset=UTF-8',
         },
       );
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
-        userUid = data['userUid'];
+        _model.setUserUid(data['userUid']);
         notifyListeners();
       } else {
         CommonMethods.showErrorDialog(context, '오류', '서버에서 오류가 발생했습니다.');
@@ -90,7 +76,7 @@ class HomeMainPageViewModel extends ChangeNotifier {
       final response = await http.get(
         Uri.parse(url),
         headers: {
-          'Authorization': token, // 토큰을 헤더에 추가
+          'Authorization': _model.token, // 토큰을 헤더에 추가
           'Content-Type': 'application/json', // 필요한 경우 헤더에 Content-Type도 추가
         },
       );
@@ -99,7 +85,7 @@ class HomeMainPageViewModel extends ChangeNotifier {
         // 응답 데이터의 body를 UTF-8로 디코딩
         String decodedBody = utf8.decode(response.bodyBytes);
         List<dynamic> responseData = jsonDecode(decodedBody);
-        posts.clear(); // 기존 게시글 리스트 초기화
+        _model.posts.clear(); // 기존 게시글 리스트 초기화
         for (var item in responseData) {
           if (item['isHidden'] == true) {
             continue; // isHidden이 true이면 해당 아이템을 건너뜁니다.
@@ -114,14 +100,13 @@ class HomeMainPageViewModel extends ChangeNotifier {
           // 주소를 비동기로 가져옵니다.
           LocationService().getAddressFromCoordinates(postLatitude, postLongitude)
               .then((address) {
-            int index = posts.indexWhere((p) => p['id'] == item['id']);
+            int index = _model.posts.indexWhere((p) => p['id'] == item['id']);
             if (index != -1) {
-              posts[index]['address'] = address;
+              _model.setPostAddress(index, address);
             }
             notifyListeners();
           });
-
-          posts.add({
+          _model.addPost({
             'id': item['id'] ?? 0, // ID 추가
             'category': item['category'] ?? '알 수 없음', // 카테고리 추가
             'isHidden': item['isHidden'] ?? false, // 숨김 상태 추가
@@ -160,29 +145,29 @@ class HomeMainPageViewModel extends ChangeNotifier {
   }
 
   void sortPosts() {
-    if (_selectedSortOption == '최신순') {
-      posts.sort((a, b) => DateTime.parse(b['postDate']).compareTo(DateTime.parse(a['postDate'])));
-    } else if (_selectedSortOption == '가까운 순') {
-      posts.sort((a, b) {
-        double distanceA = CommonMethods.calculateDistance(latitude, longitude, a['latitude'], a['longitude']);
-        double distanceB = CommonMethods.calculateDistance(latitude, longitude, b['latitude'], b['longitude']);
+    if (_model.selectedSortOption == '최신순') {
+      _model.posts.sort((a, b) => DateTime.parse(b['postDate']).compareTo(DateTime.parse(a['postDate'])));
+    } else if (_model.selectedSortOption == '가까운 순') {
+      _model.posts.sort((a, b) {
+        double distanceA = CommonMethods.calculateDistance(_model.latitude, _model.longitude, a['latitude'], a['longitude']);
+        double distanceB = CommonMethods.calculateDistance(_model.latitude, _model.longitude, b['latitude'], b['longitude']);
         return distanceA.compareTo(distanceB);
       });
     }
   }
 
   void disposeViewModel() {
-    _bannerAd?.dispose();
+    bannerAd?.dispose();
   }
 
   void loadBannerAd() {
-    _bannerAd = BannerAd(
+    bannerAd = BannerAd(
       adUnitId: dotenv.env['GOOGLE_AD_BANNER_API_KEY'] ?? '',
       size: AdSize.banner,
       request: AdRequest(),
       listener: BannerAdListener(
         onAdLoaded: (ad) {
-          _isAdLoaded = true;
+          _model.setAdLoaded(true);
           notifyListeners();
         },
         onAdFailedToLoad: (ad, error) {
@@ -191,11 +176,11 @@ class HomeMainPageViewModel extends ChangeNotifier {
         },
       ),
     );
-    _bannerAd!.load();
+    bannerAd!.load();
   }
 
   void onSortOptionChanged(String? newValue) {
-    _selectedSortOption = newValue!;
+    _model.selectedSortOption = newValue!;
     sortPosts();  // 선택된 정렬 옵션에 따라 게시물 정렬
     notifyListeners();
   }
@@ -210,7 +195,7 @@ class HomeMainPageViewModel extends ChangeNotifier {
 
   void filterByCategory(BuildContext context, String value) async {
     await findAllPost(context);
-    posts = posts.where((post) => post['category'] == value).toList();
+    _model.setPosts(_model.posts.where((post) => post['category'] == value).toList());
     notifyListeners();
   }
 }
