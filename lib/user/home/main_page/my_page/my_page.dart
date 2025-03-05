@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 import '../../../myPage/account_management_page/account_management_page.dart';
 import '../../../myPage/setting_page/setting_page.dart';
 import '../../../myPage/update_profile_page/update_profile_page.dart';
-import '../bottom/home_page_bottom.dart';
 
 class MyPage extends StatefulWidget {
   const MyPage({super.key});
@@ -238,7 +237,7 @@ class _MyPageState extends State<MyPage> {
           )
         ],
       ),
-      bottomNavigationBar: HomePageBottom(selectedIndex: 3),
+      // bottomNavigationBar: HomePageBottom(selectedIndex: 3),
     );
   }
 }

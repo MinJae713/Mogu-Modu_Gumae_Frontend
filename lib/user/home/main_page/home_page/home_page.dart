@@ -10,18 +10,17 @@ import '../../menu_page/menu_page.dart';
 import '../../notification_page/notification_page.dart';
 import '../../post/post_create_page/post_create_page.dart';
 import '../../search_page/search_page.dart';
-import '../bottom/home_page_bottom.dart';
 
-class HomeMainPage extends StatefulWidget {
-  const HomeMainPage({super.key});
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
 
   @override
   State<StatefulWidget> createState() {
-    return _HomeMainPage();
+    return _HomePage();
   }
 }
 
-class _HomeMainPage extends State<HomeMainPage> {
+class _HomePage extends State<HomePage> {
   late HomeMainPageViewModel viewModelForDispose;
 
   @override
@@ -186,7 +185,7 @@ class _HomeMainPage extends State<HomeMainPage> {
           )
         ],
       ),
-      bottomNavigationBar: HomePageBottom(selectedIndex: 0),
+      // bottomNavigationBar: HomePageBottom(selectedIndex: 0),
       floatingActionButton: ClipOval(
         child: Material(
           child: InkWell(
