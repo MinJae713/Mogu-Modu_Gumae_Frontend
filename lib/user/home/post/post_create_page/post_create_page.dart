@@ -19,7 +19,6 @@ class PostCreatePage extends StatefulWidget {
 
 class _PostCreatePageState extends State<PostCreatePage> {
 
-
   @override
   void initState() {
     super.initState();
@@ -30,6 +29,12 @@ class _PostCreatePageState extends State<PostCreatePage> {
   @override
   Widget build(BuildContext context) {
     final viewModel = Provider.of<PostCreatePageViewModel>(context);
+    if (!viewModel.isInitialized)
+      return Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -65,14 +70,14 @@ class _PostCreatePageState extends State<PostCreatePage> {
                 ),
                 SizedBox(height: 8),
                 TextFormField(
-                  controller: viewModel.titleController,
-                  focusNode: viewModel.titleFocusNode,
+                  controller: viewModel.model.titleController,
+                  focusNode: viewModel.model.titleFocusNode,
                   onFieldSubmitted: (value) {
-                    FocusScope.of(context).requestFocus(viewModel.contentFocusNode);
+                    FocusScope.of(context).requestFocus(viewModel.model.contentFocusNode);
                   },
                   decoration: InputDecoration(
                     border: OutlineInputBorder(),
-                    errorText: viewModel.isTitleValid ? null : "제목을 입력하세요",
+                    errorText: viewModel.model.isTitleValid ? null : "제목을 입력하세요",
                     focusedBorder: OutlineInputBorder(
                       borderSide: BorderSide(color: Color(0xFFB34FD1)),
                     ),
@@ -94,12 +99,12 @@ class _PostCreatePageState extends State<PostCreatePage> {
                 ),
                 SizedBox(height: 8),
                 TextFormField(
-                  controller: viewModel.contentController,
-                  focusNode: viewModel.contentFocusNode,
+                  controller: viewModel.model.contentController,
+                  focusNode: viewModel.model.contentFocusNode,
                   maxLines: 3,
                   decoration: InputDecoration(
                     border: OutlineInputBorder(),
-                    errorText: viewModel.isContentValid ? null : "내용을 입력하세요",
+                    errorText: viewModel.model.isContentValid ? null : "내용을 입력하세요",
                     focusedBorder: OutlineInputBorder(
                       borderSide: BorderSide(color: Color(0xFFB34FD1)),
                     ),
@@ -127,7 +132,7 @@ class _PostCreatePageState extends State<PostCreatePage> {
                       children: [
                         Icon(Icons.camera_alt, size: 40),
                         SizedBox(height: 4),
-                        Text('${viewModel.selectedImages.length}/${viewModel.maxImages}'),
+                        Text('${viewModel.model.selectedImages.length}/${viewModel.model.maxImages}'),
                       ],
                     ),
                   ),
@@ -137,7 +142,7 @@ class _PostCreatePageState extends State<PostCreatePage> {
                   child: SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
-                      children: viewModel.selectedImages
+                      children: viewModel.model.selectedImages
                           .map((imageData) => Padding(
                         padding: const EdgeInsets.only(right: 8.0),
                         child: ClipRRect(
@@ -159,27 +164,27 @@ class _PostCreatePageState extends State<PostCreatePage> {
             SizedBox(height: 16),
             DetailRow(
               title: '상품 카테고리',
-              value: viewModel.selectedCategory,
+              value: viewModel.model.selectedCategory,
               onTap: () => viewModel.selectCategory(context)
             ),
             DetailRow(
               title: '상품 구매',
-              value: viewModel.purchaseStatus,
+              value: viewModel.model.purchaseStatus,
               onTap: () => viewModel.selectPurchaseStatus(context)
             ),
             DetailRow(
               title: '마감 기한',
-              value: DateFormat('yyyy/MM/dd').format(viewModel.selectedDate),
+              value: DateFormat('yyyy/MM/dd').format(viewModel.model.selectedDate),
               onTap: () => viewModel.selectDate(context)
             ),
             PriceInputRow(
               title: '상품 구매 가격',
-              controller: viewModel.priceController,
-              focusNode: viewModel.priceFocusNode,
+              controller: viewModel.model.priceController,
+              focusNode: viewModel.model.priceFocusNode,
               isProductPrice: true,
-              personFocusNode: viewModel.personFocusNode
+              personFocusNode: viewModel.model.personFocusNode
             ),
-            if (!viewModel.isPriceValid)
+            if (!viewModel.model.isPriceValid)
               Row(
                 children: [
                   Expanded(child: Container()),
@@ -191,10 +196,10 @@ class _PostCreatePageState extends State<PostCreatePage> {
               ),
             PersonInputRow(
               title: '모구 인원',
-              controller: viewModel.personController,
-              personFocusNode: viewModel.personFocusNode
+              controller: viewModel.model.personController,
+              personFocusNode: viewModel.model.personFocusNode
             ),
-            if (!viewModel.isPersonValid)
+            if (!viewModel.model.isPersonValid)
               Row(
                 children: [
                   Expanded(child: Container()),
@@ -205,19 +210,19 @@ class _PostCreatePageState extends State<PostCreatePage> {
                 ],
               ),
             ShareConditionRow(
-              getShareConditionEqual: viewModel.getShareConditionEqual,
+              getShareConditionEqual: viewModel.model.getShareConditionEqual,
               toggleShareCondition: viewModel.toggleShareCondition
             ),
-            if (!viewModel.isShareConditionEqual)
+            if (!viewModel.model.isShareConditionEqual)
               PriceInputRow(
                 title: '인당 가격 설정',
-                controller: viewModel.customPriceController,
-                focusNode: viewModel.customerPriceFocusNode,
+                controller: viewModel.model.customPriceController,
+                focusNode: viewModel.model.customerPriceFocusNode,
                 isProductPrice: false,
-                personFocusNode: viewModel.personFocusNode
+                personFocusNode: viewModel.model.personFocusNode
               ),
-            if (!viewModel.isCustomPriceValid &&
-                viewModel.showCustomPriceError)
+            if (!viewModel.model.isCustomPriceValid &&
+                viewModel.model.showCustomPriceError)
               Row(
                 children: [
                   Expanded(child: Container()),
@@ -229,11 +234,11 @@ class _PostCreatePageState extends State<PostCreatePage> {
               ),
             DetailRow(
               title: '할인된 가격',
-              value: viewModel.chiefPrice,
+              value: viewModel.model.chiefPrice,
               onTap: null,
               showArrow: false
             ),
-            if (viewModel.showDiscountError)
+            if (viewModel.model.showDiscountError)
               Row(
                 children: [
                   Expanded(child: Container()),
@@ -245,10 +250,10 @@ class _PostCreatePageState extends State<PostCreatePage> {
               ),
             DetailRow(
                 title: '모임 장소',
-                value: viewModel.meetingPlace.isNotEmpty ?
-                  viewModel.meetingPlace : "구매를 위한 모임 장소",
+                value: viewModel.model.meetingPlace.isNotEmpty ?
+                  viewModel.model.meetingPlace : "구매를 위한 모임 장소",
                 onTap: () => viewModel.selectLocation(context)),
-            if (!viewModel.isLocationValid)
+            if (!viewModel.model.isLocationValid)
               Row(
                 children: [
                   Expanded(child: Container()),

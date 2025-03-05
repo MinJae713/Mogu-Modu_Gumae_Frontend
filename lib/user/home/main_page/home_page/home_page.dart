@@ -46,6 +46,12 @@ class _HomeMainPage extends State<HomeMainPage> {
   @override
   Widget build(BuildContext context) {
     final viewModel = Provider.of<HomeMainPageViewModel>(context);
+    if (!viewModel.isInitialized)
+      return Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -131,7 +137,7 @@ class _HomeMainPage extends State<HomeMainPage> {
       ),
       body: Column(
         children: <Widget>[
-          if (viewModel.isAdLoaded)
+          if (viewModel.model.isAdLoaded)
             Container(
               alignment: Alignment.center,
               width: viewModel.bannerAd!.size.width.toDouble(),
@@ -153,8 +159,8 @@ class _HomeMainPage extends State<HomeMainPage> {
                   },
                 ),
                 DropdownButton<String>(
-                  value: viewModel.selectedSortOption,
-                  items: viewModel.sortOptions.map<DropdownMenuItem<String>>((String value) {
+                  value: viewModel.model.selectedSortOption,
+                  items: viewModel.model.sortOptions.map<DropdownMenuItem<String>>((String value) {
                     return DropdownMenuItem<String>(
                       value: value,
                       child: Text(value, style: TextStyle(color: Color(0xFFB34FD1))),
@@ -169,11 +175,11 @@ class _HomeMainPage extends State<HomeMainPage> {
           ),
           Expanded(
             child: ListView.builder(
-              itemCount: viewModel.posts.length,
+              itemCount: viewModel.model.posts.length,
               itemBuilder: (context, index) {
                 return HomePostCard(
-                  post: viewModel.posts[index],
-                  userUid: viewModel.userUid
+                  post: viewModel.model.posts[index],
+                  userUid: viewModel.model.userUid
                 );
               },
             )
