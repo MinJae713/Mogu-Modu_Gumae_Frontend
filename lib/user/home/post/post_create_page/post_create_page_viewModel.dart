@@ -348,5 +348,5 @@ class PostCreatePageViewModel extends ChangeNotifier {
     _model.setCustomPriceError(false);
     _calculateDiscount();
     notifyListeners();
-  }
+  } 
 }
