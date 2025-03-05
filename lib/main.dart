@@ -90,10 +90,10 @@ class MoguApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       routes: {
-        '/user/homeMainPage': (context) => HomeMainPage(),
-        '/user/chattingPage': (context) => ChattingPage(),
-        '/user/moguListPage': (context) => MoguListPage(),
-        '/user/myPage': (context) => MyPage(),
+        // '/user/homeMainPage': (context) => HomePage(),
+        // '/user/chattingPage': (context) => ChattingPage(),
+        // '/user/moguListPage': (context) => MoguListPage(),
+        // '/user/myPage': (context) => MyPage(),
         '/admin/homeMainPageFA': (context) => HomeMainPageFA(),
         '/admin/memberManagementPage': (context) => MemberManagementPage(),
         '/admin/complaintManagementPage': (context) => ComplaintManagementPage()

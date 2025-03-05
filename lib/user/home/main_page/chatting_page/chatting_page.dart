@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 
 import '../../../chat/chat_room_page.dart';
 import '../../notification_page/notification_page.dart';
-import '../bottom/home_page_bottom.dart';
 import 'chatting_page_viewModel.dart';
 
 class ChattingPage extends StatefulWidget {
@@ -173,7 +172,7 @@ class _ChattingPageState extends State<ChattingPage> {
           )
         ],
       ),
-      bottomNavigationBar: HomePageBottom(selectedIndex: 1),
+      // bottomNavigationBar: HomePageBottom(selectedIndex: 1),
     );
   }
 }

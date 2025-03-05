@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
+// 이거슨 쓸모가 없어졌싀유
 class HomePageBottom extends StatefulWidget {
   final int selectedIndex;
   const HomePageBottom({super.key, required this.selectedIndex});

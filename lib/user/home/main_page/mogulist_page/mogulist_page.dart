@@ -5,7 +5,6 @@ import 'package:mogu_app/user/home/main_page/mogulist_page/widgets/my_mogu_card.
 import 'package:provider/provider.dart';
 
 import '../../notification_page/notification_page.dart';
-import '../bottom/home_page_bottom.dart';
 
 class MoguListPage extends StatefulWidget {
   const MoguListPage({super.key});
@@ -130,7 +129,7 @@ class _MoguListPageState extends State<MoguListPage> with SingleTickerProviderSt
           ),
         ],
       ),
-      bottomNavigationBar: HomePageBottom(selectedIndex: 2),
+      // bottomNavigationBar: HomePageBottom(selectedIndex: 2),
     );
   }
 }

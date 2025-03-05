@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:mogu_app/admin/home/home_page_FA_prev.dart';
 import 'package:http/http.dart' as http;
+import 'package:mogu_app/user/home/main_page/main_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
@@ -120,7 +121,12 @@ class _LoginPageState extends State<LoginPage> {
     if (userInfo['role'] == '관리자') {
       Navigator.pushReplacementNamed(context, '/admin/homeMainPageFA');
     } else {
-      Navigator.pushReplacementNamed(context, '/user/homeMainPage');
+      // Navigator.pushReplacementNamed(context, '/user/homeMainPage');
+      Navigator.pushReplacement(context, MaterialPageRoute(
+        builder: (context) {
+          return MainPage();
+        },
+      ));
     }
   }
 
