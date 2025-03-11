@@ -269,7 +269,7 @@ class _ComplaintManagementPage extends State<ComplaintManagementPage>
         ),
       )
           : null,
-      bottomNavigationBar: HomePageBottomFA(selectedIndex: 2),
+      // bottomNavigationBar: HomePageBottomFA(selectedIndex: 2),
     );
   }
 }

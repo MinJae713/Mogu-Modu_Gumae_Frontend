@@ -149,7 +149,7 @@ class _MemberManagementPage extends State<MemberManagementPage> {
           )
         ],
       ),
-      bottomNavigationBar: HomePageBottomFA(selectedIndex: 1),
+      // bottomNavigationBar: HomePageBottomFA(selectedIndex: 1),
     );
   }
 }

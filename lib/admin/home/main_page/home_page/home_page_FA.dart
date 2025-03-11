@@ -149,7 +149,7 @@ class _HomePageFA extends State<HomeMainPageFA> {
           )
         ],
       ),
-      bottomNavigationBar: HomePageBottomFA(selectedIndex: 0),
+      // bottomNavigationBar: HomePageBottomFA(selectedIndex: 0),
     );
   }
 }
