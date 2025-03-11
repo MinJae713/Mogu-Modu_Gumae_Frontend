@@ -237,7 +237,6 @@ class _MyPageState extends State<MyPage> {
           )
         ],
       ),
-      // bottomNavigationBar: HomePageBottom(selectedIndex: 3),
     );
   }
 }

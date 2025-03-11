@@ -35,7 +35,12 @@ class _MoguListPageState extends State<MoguListPage> with SingleTickerProviderSt
   @override
   Widget build(BuildContext context) {
     final viewModel = Provider.of<MoguListPageViewModel>(context);
-    if (!viewModel.isInitialized) return const Scaffold();
+    if (!viewModel.isInitialized)
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -129,7 +134,6 @@ class _MoguListPageState extends State<MoguListPage> with SingleTickerProviderSt
           ),
         ],
       ),
-      // bottomNavigationBar: HomePageBottom(selectedIndex: 2),
     );
   }
 }
