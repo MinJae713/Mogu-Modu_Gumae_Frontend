@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:mogu_app/admin/home/main_page/bottom/home_page_bottom_FA.dart';
 import 'package:mogu_app/admin/home/main_page/member_management_page/member_list.dart';
 
 class MemberManagementPage extends StatefulWidget {
@@ -149,7 +148,6 @@ class _MemberManagementPage extends State<MemberManagementPage> {
           )
         ],
       ),
-      // bottomNavigationBar: HomePageBottomFA(selectedIndex: 1),
     );
   }
 }

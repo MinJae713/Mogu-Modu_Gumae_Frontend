@@ -172,7 +172,6 @@ class _ChattingPageState extends State<ChattingPage> {
           )
         ],
       ),
-      // bottomNavigationBar: HomePageBottom(selectedIndex: 1),
     );
   }
 }

@@ -14,8 +14,8 @@ class NotificationPageViewModel extends ChangeNotifier {
 
   Future<void> _findAlarmSignal(BuildContext context,
       Map<String, dynamic> userInfo) async {
-    // String url = 'http://${dotenv.env['SERVER_IP']}:${dotenv.env['SERVER_PORT']}/alarm/${userInfo['userId']}';
-    String url = 'http://10.0.2.2:8080/alarm/${userInfo['userId']}';
+    String url = 'http://${dotenv.env['SERVER_IP']}:${dotenv.env['SERVER_PORT']}/alarm/${userInfo['userId']}';
+    // String url = 'http://10.0.2.2:8080/alarm/${userInfo['userId']}';
 
     try {
       final response = await http.get(Uri.parse(url));

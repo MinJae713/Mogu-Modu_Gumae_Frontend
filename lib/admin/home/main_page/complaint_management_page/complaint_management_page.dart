@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:mogu_app/admin/home/main_page/bottom/home_page_bottom_FA.dart';
 import 'package:mogu_app/admin/home/main_page/common/search_results.dart';
 import 'package:mogu_app/admin/home/main_page/complaint_management_page/inquiry_list.dart';
 import 'package:mogu_app/admin/home/main_page/complaint_management_page/notice_list.dart';
@@ -269,7 +268,6 @@ class _ComplaintManagementPage extends State<ComplaintManagementPage>
         ),
       )
           : null,
-      // bottomNavigationBar: HomePageBottomFA(selectedIndex: 2),
     );
   }
 }
