@@ -12,7 +12,7 @@ class HomePageBottomFA extends StatefulWidget {
 }
 
 class _HomePageBottomFA extends State<HomePageBottomFA> {
-
+// 안씀
   void _onItemTapped(int index) {
     switch (index) {
       case 0:

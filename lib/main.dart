@@ -94,9 +94,9 @@ class MoguApp extends StatelessWidget {
         // '/user/chattingPage': (context) => ChattingPage(),
         // '/user/moguListPage': (context) => MoguListPage(),
         // '/user/myPage': (context) => MyPage(),
-        '/admin/homeMainPageFA': (context) => HomeMainPageFA(),
-        '/admin/memberManagementPage': (context) => MemberManagementPage(),
-        '/admin/complaintManagementPage': (context) => ComplaintManagementPage()
+        // '/admin/homeMainPageFA': (context) => HomeMainPageFA(),
+        // '/admin/memberManagementPage': (context) => MemberManagementPage(),
+        // '/admin/complaintManagementPage': (context) => ComplaintManagementPage()
       },
       home: LoadingPage(),
     );
